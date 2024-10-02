@@ -6,7 +6,6 @@ const getAuthToken = () => {
   return token ? `Bearer ${token}` : null;
 };
 
-// Manejo de errores
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const errorData = await response.json();
@@ -15,10 +14,6 @@ const handleResponse = async (response: Response) => {
   return response.json();
 };
 
-/**
- * Función para guardar la información del usuario
- * @param userInfo Objeto que contiene la información del usuario
- */
 export const saveUserInfo = async (userInfo: { weight: number; height: number; name: string; email: string; password: string; sex: string; birthday: string; }) => {
   const token = getAuthToken();
   if (!token) throw new Error('Token no encontrado');
@@ -35,9 +30,6 @@ export const saveUserInfo = async (userInfo: { weight: number; height: number; n
   return handleResponse(response);
 };
 
-/**
- * Función para obtener la información del usuario
- */
 export const getUserProfile = async () => {
   const token = getAuthToken();
   if (!token) throw new Error('Token no encontrado');
@@ -52,10 +44,6 @@ export const getUserProfile = async () => {
   return handleResponse(response);
 };
 
-/**
- * Función para actualizar la información del usuario
- * @param userInfo Objeto que contiene la información actualizada del usuario
- */
 export const updateUserProfile = async (userInfo: { full_name?: string; gender?: string; weight?: string | number | null; height?: string| number | null}) => {
   const token = getAuthToken();
   if (!token) throw new Error('Token no encontrado');
@@ -72,9 +60,6 @@ export const updateUserProfile = async (userInfo: { full_name?: string; gender?:
   return handleResponse(response);
 };
 
-/**
- * Función para eliminar la cuenta del usuario
- */
 export const deleteUser = async () => {
   const token = getAuthToken();
   if (!token) throw new Error('Token no encontrado');
