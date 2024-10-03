@@ -21,6 +21,8 @@ import { useNavigate } from 'react-router-dom';
 import { grey } from '@mui/material/colors';
 import { deleteCategory, editCategory, getCategories, saveCategory } from '../../api/CategoryApi';
 import { deleteExercise, editExercise, getExerciseFromCategory, saveExercise } from '../../api/ExerciseApi';
+import TopMiddleAlert from '../../personalizedComponents/TopMiddleAlert';
+import handleCategoryIcon from '../../personalizedComponents/handleCategoryIcon';
 
 interface CategoryWithExercises {
   category_id: string;
@@ -41,7 +43,7 @@ interface Category {
 
 interface Exercise {
   exercise_id: string;
-  calories_per_hour: number;
+  calories_per_hour: number | string;
   category_id: string;
   name: string;
   owner: string;
@@ -54,7 +56,7 @@ interface NewCategory {
 }
 
 interface NewExercise {
-  calories_per_hour: number;
+  calories_per_hour: number | string;
   category_id: string;
   name: string;
 }
@@ -79,6 +81,13 @@ export default function CategoriesPage() {
 
   const handleOpenAddCategoryDialog = () => setAddCategoryDialogOpen(true);
   const handleCloseAddCategoryDialog = () => setAddCategoryDialogOpen(false);
+
+  const [alertCategoryAddedOpen, setAlertCategoryAddedOpen] = useState(false);
+  const [alertExerciseAddedOpen, setAlertExerciseAddedOpen] = useState(false);
+  const [alertCategoryEditedOpen, setAlertCategoryEditedOpen] = useState(false);
+  const [alertExerciseEditedOpen, setAlertExerciseEditedOpen] = useState(false);
+  const [alertCategoryDeletedOpen, setAlertCategoryDeletedOpen] = useState(false);
+  const [alertExerciseDeletedOpen, setAlertExerciseDeletedOpen] = useState(false);
 
 
   const getAllCategories = async () => {
@@ -165,6 +174,7 @@ export default function CategoriesPage() {
           ...prev,
           { ...category, exercises: [] }
         ]);
+        setAlertCategoryAddedOpen(true);
       } catch (error) {
         console.error('Error al guardar la categoría:', error)
       }
@@ -191,6 +201,7 @@ export default function CategoriesPage() {
           })
         );
         setNewExercise(null);
+        setAlertExerciseAddedOpen(true);
       } catch (error) {
         console.error('Error al guardar el ejercicio:', error);
       }
@@ -207,6 +218,7 @@ export default function CategoriesPage() {
             category.category_id === editingCategory.category_id ? { ...editingCategory, exercises: category.exercises } : category
           )
         );
+        setAlertCategoryEditedOpen(true);
       } catch (error) {
         console.error('Error al editar la categoría:', error);
       }
@@ -232,6 +244,7 @@ export default function CategoriesPage() {
             return category;
           })
         );
+        setAlertExerciseEditedOpen(true);
       } catch (error) {
         console.error('Error al editar el ejercicio:', error);
       }
@@ -244,6 +257,7 @@ export default function CategoriesPage() {
     try {
       await deleteCategory(categoryId);
       setCategoryWithExercises(categoryWithExercises.filter((category) => category.category_id !== categoryId));
+      setAlertCategoryDeletedOpen(true);
     } catch (error) {
       console.error('Error al eliminar la categoría:', error);
     }
@@ -263,6 +277,7 @@ export default function CategoriesPage() {
           return category;
         })
       );
+      setAlertExerciseDeletedOpen(true);
     } catch (error) {
       console.error('Error al eliminar el ejercicio:', error);
     }
@@ -271,45 +286,6 @@ export default function CategoriesPage() {
   const handleBackToHome = () => {
     navigate('/homepage');
   };
-
-  const handleIcon = (icon: string) => {
-    switch (icon) {
-      case 'Dumbbell':
-        return <DumbbellIcon />;
-      case 'Ball':
-        return <BallIcon />;
-      case 'Heart':
-        return <HeartIcon />;
-      case 'Basketball':
-        return <BasketballIcon />;
-      case 'Tennis':
-        return <TennisIcon />;
-      case 'Fight':
-        return <FightIcon />;
-      case 'Martial':
-        return <MartialIcon />;
-      case 'Mma':
-        return <MmaIcon />;
-      case 'Motorsports':
-        return <MotorsportsIcon />;
-      case 'Hiking':
-        return <HikingIcon />;
-      case 'Sailing':
-        return <SailingIcon />;
-      case 'Skiing':
-        return <SkiingIcon />;
-      case 'Pool':
-        return <PoolIcon />;
-      case 'Skate':
-        return <SkateIcon />;
-      case 'Rugby':
-        return <RugbyIcon />;
-      case 'Volleyball':
-        return <VolleyballIcon />;
-      default:
-        return null;
-    }
-  }
 
   return (
     <Box sx={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #1a202c, #2d3748)', color: 'white', p: 4 }}>
@@ -320,6 +296,14 @@ export default function CategoriesPage() {
         <Typography variant="h4">Categories & Exercises</Typography>
         <Box sx={{ width: 6 }}></Box>
       </Box>
+
+      <TopMiddleAlert alertText='Added category successfully' open={alertCategoryAddedOpen} onClose={() => setAlertCategoryAddedOpen(false)} />
+      <TopMiddleAlert alertText='Added exercise successfully' open={alertExerciseAddedOpen} onClose={() => setAlertExerciseAddedOpen(false)} />
+      <TopMiddleAlert alertText='Edited category successfully' open={alertCategoryEditedOpen} onClose={() => setAlertCategoryEditedOpen(false)} />
+      <TopMiddleAlert alertText='Edited exercise successfully' open={alertExerciseEditedOpen} onClose={() => setAlertExerciseEditedOpen(false)} />
+      <TopMiddleAlert alertText='Deleted category successfully' open={alertCategoryDeletedOpen} onClose={() => setAlertCategoryDeletedOpen(false)} />
+      <TopMiddleAlert alertText='Deleted exercise successfully' open={alertExerciseDeletedOpen} onClose={() => setAlertExerciseDeletedOpen(false)} />
+
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
           <CircularProgress />
@@ -347,7 +331,7 @@ export default function CategoriesPage() {
                   id={`panel-${category.category_id}-header`}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    {handleIcon(category.icon)}
+                    {handleCategoryIcon(category.icon)}
                     <Typography sx={{ ml: 1, fontWeight: 'bold', fontSize: '1.2rem' }}>{category.name}</Typography>
                   </Box>
                   {category.isCustom && (
@@ -501,12 +485,50 @@ export default function CategoriesPage() {
           <TextField
             margin="dense"
             id="exercise-calories"
-            label="KCal Per Hour"
+            label="Kcal per Hour"
             type="number"
             fullWidth
             variant="standard"
-            value={newExercise?.calories_per_hour || 1}
-            onChange={(e) => setNewExercise({ ...newExercise, calories_per_hour: parseInt(e.target.value), name: newExercise?.name || '', category_id: newExercise?.category_id || '' })}
+            value={newExercise?.calories_per_hour ?? ''}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "") {
+                setNewExercise({ 
+                  ...newExercise, 
+                  calories_per_hour: "", 
+                  name: newExercise?.name || '', 
+                  category_id: newExercise?.category_id || '' 
+                });
+              } else {
+                const numericValue = parseInt(value, 10);
+                if (numericValue >= 1 && numericValue <= 4000) {
+                  setNewExercise({ 
+                    ...newExercise, 
+                    calories_per_hour: numericValue, 
+                    name: newExercise?.name || '', 
+                    category_id: newExercise?.category_id || '' 
+                  });
+                } else if (numericValue < 1) {
+                  setNewExercise({ 
+                    ...newExercise, 
+                    calories_per_hour: 1, 
+                    name: newExercise?.name || '', 
+                    category_id: newExercise?.category_id || '' 
+                  });
+                } else if (numericValue > 4000) {
+                  setNewExercise({ 
+                    ...newExercise, 
+                    calories_per_hour: 4000, 
+                    name: newExercise?.name || '', 
+                    category_id: newExercise?.category_id || '' 
+                  });
+                }
+              }
+            }}
+            placeholder="Kcal per Hour"
+            slotProps={{
+              htmlInput: { min: 1, max: 4000 }
+            }}
           />
         </DialogContent>
         <DialogActions>
@@ -614,8 +636,38 @@ export default function CategoriesPage() {
               type="number"
               fullWidth
               variant="standard"
-              value={editingExercise.calories_per_hour}
-              onChange={(e) => setEditingExercise({ ...editingExercise, calories_per_hour: parseInt(e.target.value) })}
+              value={editingExercise.calories_per_hour ?? ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "") {
+                  setEditingExercise({ 
+                    ...editingExercise, 
+                    calories_per_hour: "" 
+                  });
+                } else {
+                  const numericValue = parseInt(value, 10);
+                  if (numericValue >= 1 && numericValue <= 4000) {
+                    setEditingExercise({ 
+                      ...editingExercise, 
+                      calories_per_hour: numericValue 
+                    });
+                  } else if (numericValue < 1) {
+                    setEditingExercise({ 
+                      ...editingExercise, 
+                      calories_per_hour: 1 
+                    });
+                  } else if (numericValue > 4000) {
+                    setEditingExercise({ 
+                      ...editingExercise, 
+                      calories_per_hour: 4000 
+                    });
+                  }
+                }
+              }}
+              placeholder="KCal Per Hour"
+              slotProps={{
+                htmlInput: { min: 1, max: 4000 }
+              }}
             />
           </DialogContent>
         )}

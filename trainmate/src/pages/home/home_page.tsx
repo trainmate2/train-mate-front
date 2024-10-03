@@ -34,6 +34,7 @@ import { WorkOff } from '@mui/icons-material';
 import { FilterDateDialog } from './filter_date';
 import { FilterCategoryDialog } from './filter_category';
 import { FilterExerciseDialog } from './filter_exercise';
+import handleCategoryIcon from '../../personalizedComponents/handleCategoryIcon';
 
 interface Workout {
   id: number;
@@ -80,6 +81,8 @@ export default function HomePage() {
   const [filterDateOpen, setFilterDateOpen] = useState(false);
   const [filterCategoryOpen, setFilterCategoryOpen] = useState(false);
   const [filterExerciseOpen, setFilterExerciseOpen] = useState(false);
+  const [selectedCategoryInFilter, setSelectedCategoryInFilter] = useState<Category | null>(null);
+  const [selectedExerciseInFilter, setSelectedExerciseInFilter] = useState<Workout | null>(null);
 
   const handleAvatarClick = () => {
     navigate('/profile');
@@ -107,7 +110,6 @@ export default function HomePage() {
 
       // Llama a getWorkouts solo con el endDate como hoy
       const workouts = await getWorkouts(token, undefined, today);
-      console.log(workouts)
       return Array.isArray(workouts) ? workouts : [];
     } catch (error) {
       console.error('Error al obtener todos los entrenamientos:', error);
@@ -119,9 +121,16 @@ export default function HomePage() {
     const fetchWorkouts = async () => {
       try {
         setLoading(true);
-        const workouts = await getAllWorkouts();
-        const validWorkouts = workouts.filter((exercise: Workout) =>
-          exercise.exercise && exercise.duration && exercise.date && exercise.calories
+        var workouts = await getAllWorkouts();
+        if (selectedCategoryInFilter) {
+          const exercises = await getExerciseFromCategory(selectedCategoryInFilter.category_id);
+          workouts = workouts.filter((workout) => exercises.find((exercise: Exercise) => exercise.exercise_id === workout.exercise_id));
+        }
+        if (selectedExerciseInFilter) {
+          workouts = workouts.filter((workout) => workout.exercise === selectedExerciseInFilter.exercise);
+        }
+        const validWorkouts = workouts.filter((workout: Workout) =>
+          workout.exercise && workout.duration && workout.date && workout.calories
         );
         // Sort the workouts by date (we convert the string to a Date object)
         const sortedWorkouts = validWorkouts.sort((a: Workout, b: Workout) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -134,7 +143,7 @@ export default function HomePage() {
     };
 
     fetchWorkouts();
-  }, [workoutsCount]);
+  }, [workoutsCount, selectedCategoryInFilter, selectedExerciseInFilter]);
 
   const getAllWorkoutsCalories = async () => {
     try {
@@ -165,15 +174,26 @@ export default function HomePage() {
   useEffect(() => {
     const fetchWorkoutsCalories = async () => {
       try {
-        const workouts_calories_and_dates = await getAllWorkoutsCalories();
+        var workouts_calories_and_dates = await getAllWorkoutsCalories();
+  
+        if (selectedCategoryInFilter) {
+          const exercises = await getExerciseFromCategory(selectedCategoryInFilter.category_id);
+          workouts_calories_and_dates = workouts_calories_and_dates.filter((workout) =>
+            exercises.find((exercise: Exercise) => exercise.exercise_id === workout.exercise_id)
+          );
+        }
+        if (selectedExerciseInFilter) {
+          workouts_calories_and_dates = workouts_calories_and_dates.filter((workout) => workout.exercise_id === selectedExerciseInFilter.exercise_id);
+        }
         const calories_per_day = calculate_calories_per_day(workouts_calories_and_dates);
         setCaloriesPerDay(calories_per_day);
       } catch (error) {
-        console.error('Error al obtener toda la data de los entrenamientos:', error);
+        console.error('Error fetching workout calories data:', error);
       }
     };
+  
     fetchWorkoutsCalories();
-  }, [workoutsCount]);
+  }, [workoutsCount, selectedCategoryInFilter, selectedExerciseInFilter]);
 
   const dataForChart = useMemo(() => formatDataForChart(), [caloriesPerDay]);
 
@@ -198,6 +218,30 @@ export default function HomePage() {
 
   const handleFilterClose = () => {
     setFilterOpen(false);
+  }
+
+  const handleFilterDateOpen = () => {
+    setFilterDateOpen(true);
+  }
+
+  const handleFilterCategoryOpen = () => {
+    setFilterCategoryOpen(true);
+  }
+
+  const handleFilterExerciseOpen = () => {
+    setFilterExerciseOpen(true);
+  }
+
+  const handleFilterDateClose = () => {
+    setFilterDateOpen(false);
+  }
+
+  const handleFilterCategoryClose = () => {
+    setFilterCategoryOpen(false);
+  }
+
+  const handleFilterExerciseClose = () => {
+    setFilterExerciseOpen(false);
   }
 
   const handleOpenWorkoutAdding = () => {
@@ -327,9 +371,9 @@ export default function HomePage() {
         <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>Filter By</DialogTitle>
         <DialogContent>
           <Box display="flex" justifyContent="space-around" alignItems="center" mt={2} >
-            <Box textAlign="center" mx={3}>
+            {/* <Box textAlign="center" mx={3}>
               <Button sx={{ backgroundColor: grey[700], borderColor: grey[900]}} onClick={() => setFilterDateOpen(true)} variant="contained">Dates</Button>
-            </Box>
+            </Box> */}
             <Box textAlign="center" mx={3}>
               <Button sx={{ backgroundColor: grey[700], borderColor: grey[900]}} onClick={() => setFilterCategoryOpen(true)} variant="contained">Category</Button>
             </Box>
@@ -340,9 +384,13 @@ export default function HomePage() {
         </DialogContent>
       </Dialog>
 
-      <FilterDateDialog filterDateOpen={filterDateOpen} setFilterDateOpen={setFilterDateOpen}/>
-      <FilterCategoryDialog filterCategoryOpen={filterCategoryOpen} setFilterCategoryOpen={setFilterCategoryOpen}/>
-      <FilterExerciseDialog filterExerciseOpen={filterExerciseOpen} setFilterExerciseOpen={setFilterExerciseOpen}/>
+      {/* <FilterDateDialog filterDateOpen={filterDateOpen} setFilterDateOpen={setFilterDateOpen}/> */}
+
+      <FilterCategoryDialog filterCategoryOpen={filterCategoryOpen} handleFilterCategoryClose={handleFilterCategoryClose} selectedCategoryInFilter={selectedCategoryInFilter} 
+      setSelectedCategoryInFilter={setSelectedCategoryInFilter} categories={categories} handleFilterClose={handleFilterClose}/>
+
+      <FilterExerciseDialog filterExerciseOpen={filterExerciseOpen} handleFilterExerciseClose={handleFilterExerciseClose} selectedExerciseInFilter={selectedExerciseInFilter}
+      setSelectedExerciseInFilter={setSelectedExerciseInFilter} handleFilterClose={handleFilterClose} workoutList={workoutList}/>
 
       <Dialog open={open} onClose={handleClose}
         PaperProps={{
@@ -427,7 +475,7 @@ export default function HomePage() {
             </MenuItem>
             {categories.map((category) => (
               <MenuItem key={category.category_id} value={category.category_id}>
-                {category.name}
+                {handleCategoryIcon(category.icon)}{category.name}
               </MenuItem>
             ))}
           </Select>
@@ -541,6 +589,53 @@ export default function HomePage() {
               title="Progress"
             />
             <CardContent>
+
+              {(selectedCategoryInFilter && selectedCategoryInFilter.name) ? (
+                <Box 
+                  sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  backgroundColor: grey[700], 
+                  borderRadius: '8px', 
+                  padding: 2, 
+                  marginBottom: 2,
+                  height: 50,
+                  width: 130
+                  }}
+                >
+                  <Typography variant="h6">{selectedCategoryInFilter?.name}</Typography>
+                  <IconButton aria-label="add" onClick={() => setSelectedCategoryInFilter(null)}>
+                    <CloseIcon sx={{ color: grey[900], fontSize: 20 }} className="h-12 w-12" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Box></Box>
+              )}
+
+              {(selectedExerciseInFilter) ? (
+                <Box 
+                  sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  backgroundColor: grey[700], 
+                  borderRadius: '8px', 
+                  padding: 2, 
+                  marginBottom: 2,
+                  height: 50,
+                  width: 130
+                  }}
+                >
+                  <Typography variant="h6">{selectedExerciseInFilter?.exercise}</Typography>
+                  <IconButton aria-label="add" onClick={() => setSelectedExerciseInFilter(null)}>
+                    <CloseIcon sx={{ color: grey[900], fontSize: 20 }} className="h-12 w-12" />
+                  </IconButton>
+                </Box>
+              ) : (
+                <Box></Box>
+              )}
+
               <ResponsiveContainer width="100%" height={300}>
                 {Array.isArray(workoutList) && workoutList.length > 0 ? (
                   <LineChart data={dataForChart}>
@@ -564,7 +659,7 @@ export default function HomePage() {
           </Card>
 
           <Card sx={{ backgroundColor: '#333', color: '#fff' }}>
-            <CardHeader title="Recent Exercises" />
+            <CardHeader title="Recent Workouts" />
             <CardContent>
               <ScrollArea sx={{ maxHeight: 300, overflow: 'auto' }}>
                 {Array.isArray(workoutList) && workoutList.length > 0 ? (
