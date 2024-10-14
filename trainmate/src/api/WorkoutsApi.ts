@@ -1,7 +1,7 @@
 import { BASE_URL } from "../constants";
 import { refreshAuthToken } from "../utils/AuthUtils";
 
-export const saveWorkout = async (token: string, workoutData: { exercise_id: string, exercise: string, duration: number, date: string }) => {
+export const saveWorkout = async (token: string, workoutData: { training_id: string, coach: string, duration: number, date: string }) => {
   try {
     const response = await fetch(`${BASE_URL}/save-workout`, {
       method: 'POST',
@@ -13,7 +13,7 @@ export const saveWorkout = async (token: string, workoutData: { exercise_id: str
     });
 
     // Si la respuesta es 401, intentamos renovar el token
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 401) {
       console.log('Token expirado, intentando renovar...');
       const newToken = await refreshAuthToken(); // Renueva el token
       // Intentamos la solicitud de nuevo con el nuevo token
@@ -51,7 +51,6 @@ export const saveWorkout = async (token: string, workoutData: { exercise_id: str
 
 export const getWorkouts = async (token: string, startDate?: string, endDate?: string) => {
   try {
-    // Build the query string based on the presence of startDate and endDate
     let query = '';
     if (startDate && endDate) {
       query = `?startDate=${startDate}&endDate=${endDate}`;
@@ -70,7 +69,7 @@ export const getWorkouts = async (token: string, startDate?: string, endDate?: s
     });
 
     // Si la respuesta es 401, intentamos renovar el token
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 401) {
       console.log('Token expirado, intentando renovar...');
       const newToken = await refreshAuthToken(); // Renueva el token
       // Intentamos la solicitud de nuevo con el nuevo token
@@ -130,7 +129,7 @@ export const getWorkoutsCalories = async (token: string, startDate?: string, end
     });
 
     // Si la respuesta es 401, intentamos renovar el token
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 401) {
       console.log('Token expirado, intentando renovar...');
       const newToken = await refreshAuthToken(); // Renueva el token
       // Intentamos la solicitud de nuevo con el nuevo token

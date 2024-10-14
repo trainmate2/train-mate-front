@@ -1,20 +1,25 @@
-interface WorkoutData {
+interface Workout {
+    id: number;
+    duration: number;
     date: string;
-    calories: number;
-}
+    total_calories: number;
+    coach: string;
+    training_id: string;
+  }
   
-export const calculate_calories_per_day = (calories_and_dates: WorkoutData[]) => {
-const calories_per_day: { [date: string]: number } = {};
+export const calculate_calories_and_duration_per_day = (workouts: Workout[]) => {
+    const calories_and_duration_per_day: { [date: string]: [number, number] } = {};
 
-calories_and_dates.forEach((workout) => {
-    const { date, calories } = workout;
+    workouts.forEach((workout) => {
+        const { date, total_calories, duration } = workout;
 
-    if (calories_per_day[date]) {
-    calories_per_day[date] += calories;
-    } else {
-    calories_per_day[date] = calories;
-    }
-});
+        if (calories_and_duration_per_day[date]) {
+            calories_and_duration_per_day[date][0] += total_calories;
+            calories_and_duration_per_day[date][1] += duration;
+        } else {
+            calories_and_duration_per_day[date] = [total_calories, duration];
+        }
+    });
 
-return calories_per_day;
+    return calories_and_duration_per_day;
 };

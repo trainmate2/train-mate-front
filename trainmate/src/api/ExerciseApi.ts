@@ -19,7 +19,7 @@ export const getExerciseFromCategory = async (category_id: String) => {
     });
 
     // Si la respuesta es 401, intentamos renovar el token
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 401) {
         console.log('Token expirado, intentando renovar...');
         const newToken = await refreshAuthToken(); // Renueva el token
         // Intentamos la solicitud de nuevo con el nuevo token
@@ -71,7 +71,7 @@ export const getExerciseFromCategory = async (category_id: String) => {
       });
   
       // Si la respuesta es 401, intentamos renovar el token
-      if (response.status === 403) {
+      if (response.status === 403 || response.status === 401) {
         console.log('Token expirado, intentando renovar...');
         const newToken = await refreshAuthToken(); // Renueva el token
         // Intentamos la solicitud de nuevo con el nuevo token
@@ -122,7 +122,7 @@ export const editExercise = async (exerciseData: { name: string, calories_per_ho
         });
     
         // Si la respuesta es 401, intentamos renovar el token
-        if (response.status === 403) {
+        if (response.status === 403 || response.status === 401) {
             console.log('Token expirado, intentando renovar...');
             const newToken = await refreshAuthToken(); // Renueva el token
             // Intentamos la solicitud de nuevo con el nuevo token
@@ -170,7 +170,7 @@ export const deleteExercise = async (exercise_id: string) => {
     });
 
     // Si la respuesta es 401, intentamos renovar el token
-    if (response.status === 403) {
+    if (response.status === 403 || response.status === 401) {
         console.log('Token expirado, intentando renovar...');
         const newToken = await refreshAuthToken(); // Renueva el token
         // Intentamos la solicitud de nuevo con el nuevo token
