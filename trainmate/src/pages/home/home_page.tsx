@@ -39,6 +39,8 @@ import { getTrainings } from '../../api/TrainingApi';
 import { FilterCoachDialog } from './filter_coach';
 import WaterIntakeCard from './water_intake';
 import ResponsiveMenu from './menu_responsive';
+import LoadingAnimation from '../../personalizedComponents/loadingAnimation';
+import '../../App.css';
 
 interface Workout {
   id: number;
@@ -423,6 +425,7 @@ export default function HomePage() {
   }
 
   useEffect(() => {
+    setLoading(true);
     const fetchCategories = async () => {
       try {
         const categories_from_local_storage = JSON.parse(localStorage.getItem('categories') || '[]');
@@ -445,6 +448,8 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error('Error al obtener las categorías:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCategories();
@@ -467,6 +472,7 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    setLoading(true);
     const fetchCoaches = async () => {
       try {
         const coaches_from_local_storage = JSON.parse(localStorage.getItem('coaches') || '[]');
@@ -481,12 +487,15 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error('Error al obtener los profesores:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchCoaches();
   }, []);
 
   useEffect(() => {
+    setLoading(true);
     const fetchTrainings = async () => {
       try {
         const trainings = await getAllTrainings();
@@ -496,6 +505,8 @@ export default function HomePage() {
           }
       } catch (error) {
         console.error('Error al obtener entrenamientos:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchTrainings();
@@ -729,9 +740,7 @@ export default function HomePage() {
       </Dialog>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-          <CircularProgress />
-        </Box>
+        <LoadingAnimation />
       ) : (
         <main className="p-4 space-y-6">
           <Card sx={{ backgroundColor: '#161616', color: '#fff' }} className='border border-gray-600' >
@@ -824,7 +833,8 @@ export default function HomePage() {
                     <Tooltip />
                     <Line type="monotone" dataKey="Calories" stroke="#E43654" activeDot={{ r: 10 }} yAxisId="left" />
                     <Line type="monotone" dataKey="Minutes" stroke="#44f814" activeDot={{ r: 10 }} yAxisId="right" />
-                    <Brush dataKey="date" height={30} stroke="#00000" y={300} fill="#00000" travellerWidth={10}
+                    <Brush dataKey="date" height={30} stroke="#000000" y={300} fill="#161616" travellerWidth={10}
+                    className="custom-brush"
                     traveller={(props) => {
                       const { x, y, width, height } = props;
                       return (
@@ -890,10 +900,10 @@ export default function HomePage() {
                         <div className="flex-1">
                           <Divider sx={{ backgroundColor: 'gray', marginY: 1 }} />
                           <Box sx={{ display: 'flex', flexDirection: { xs: 'row', sm: 'row' }, justifyContent: 'space-between', width: '100%', marginBottom: 1 }}>
-                            <Typography variant="h6" color="#81d8d0" sx={{ flex: 1 }}>{workout.training.name}</Typography>
-                            <Typography variant="h6" color='#44f814' sx={{ flex: 1, textAlign: 'left' }}>{workout.duration} min</Typography>
-                            <Typography variant="h6" color='#E43654' sx={{ flex: 1, textAlign: 'left' }}>{workout.total_calories} kcal</Typography>
-                            <Typography variant="subtitle1" color='gray' sx={{ flex: 1, textAlign: 'right' }}>{formatDate(workout.date)} </Typography>
+                            <Typography variant="h6" color="#81d8d0" sx={{ flex: 1, fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' }}}>{workout.training.name}</Typography>
+                            <Typography variant="h6" color='#44f814' sx={{ flex: 1, textAlign: 'left', fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' } }}>{workout.duration} min</Typography>
+                            <Typography variant="h6" color='#E43654' sx={{ flex: 1, textAlign: 'left', fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' } }}>{workout.total_calories} kcal</Typography>
+                            <Typography variant="subtitle1" color='gray' sx={{ flex: 1, textAlign: 'right', fontSize: { xs: '0.8rem', sm: '1rem', md: '1.2rem' } }}>{formatDate(workout.date)} </Typography>
                           </Box>
                           <Typography variant="body2">
                             {workout.training.exercises.map((exercise: any, index: number) => (

@@ -7,6 +7,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { getWorkouts } from '../../api/WorkoutsApi';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import CloseIcon from '@mui/icons-material/Close';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 dayjs.extend(isSameOrAfter);
 
 interface DrawerProps {
@@ -113,42 +114,128 @@ const CalendarModal: React.FC<DrawerProps> = ({ showDrawer, onClose, open }) => 
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <DatePicker
-              label="Start Date"
-              value={dateRange[0]}
-              onChange={(newValue) => handleDateChange([newValue, dateRange[1]])}
-              slotProps={{
-                textField: {
-                  variant: 'outlined',
-                  fullWidth: true,
-                  sx: {
-                    backgroundColor: grey[800],
-                    color: grey[50],
-                    borderRadius: '8px',
-                    label: { color: grey[400], fontWeight: 'bold' },
-                    input: { color: '#fff' },
+          <DatePicker
+            label="Start Date"
+            value={dateRange[0]}
+            onChange={(newValue) => handleDateChange([newValue, dateRange[1]])}
+            slotProps={{
+              textField: {
+                variant: 'outlined',
+                fullWidth: true,
+                sx: {
+                  backgroundColor: grey[800],
+                  color: grey[50],
+                  borderRadius: '8px',
+                  label: { color: grey[400], fontWeight: 'bold' },
+                  input: { color: '#fff' },
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: grey[700],
+                    },
+                    "&:hover fieldset": {
+                      borderColor: grey[400],
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: grey[100],
+                    },
                   },
                 },
-              }}
-            />
-            <DatePicker
-              label="End Date"
-              value={dateRange[1]}
-              onChange={(newValue) => handleDateChange([dateRange[0], newValue])}
-              slotProps={{
-                textField: {
-                  variant: 'outlined',
-                  fullWidth: true,
-                  sx: {
+              },
+              popper: {
+                sx: {
+                  "& .MuiPaper-root": {
                     backgroundColor: grey[800],
+                  },
+                  "& .MuiPickersCalendarHeader-root": {
+                    color: grey[50], // Month/Year color
+                  },
+                  "& .MuiDayCalendar-weekDayLabel": {
+                    color: grey[400], // Weekday label colors
+                  },
+                  "& .MuiPickersDay-root": {
+                    color: grey[50], // Day numbers color
+                  },
+                  // Increase specificity to override default styles
+                  "& .MuiPickersDay-root.Mui-selected": {
+                    backgroundColor: '#000000 !important',
                     color: grey[50],
-                    borderRadius: '8px',
-                    label: { color: grey[400], fontWeight: 'bold' },
-                    input: { color: '#fff' },
+                    fontWeight: 'bold',
+                  },
+                  "& .MuiPickersDay-root.Mui-selected:hover": {
+                    backgroundColor: '#000000 !important',
+                  },
+                  // Style for today's date
+                  "& .MuiPickersDay-root.MuiPickersDay-today": {
+                    border: `1px solid ${grey[700]}`,
+                  },
+                  "& .MuiPickersDay-root:hover": {
+                    backgroundColor: grey[600],
                   },
                 },
-              }}
-            />
+              },
+            }}
+          />
+        <DatePicker
+            label="End Date"
+            value={dateRange[1]}
+            onChange={(newValue) => handleDateChange([dateRange[0], newValue])}
+            slotProps={{
+              textField: {
+                variant: 'outlined',
+                fullWidth: true,
+                sx: {
+                  backgroundColor: grey[800],
+                  color: grey[50],
+                  borderRadius: '8px',
+                  label: { color: grey[400], fontWeight: 'bold' },
+                  input: { color: '#fff' },
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: grey[700],
+                    },
+                    "&:hover fieldset": {
+                      borderColor: grey[400],
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: grey[100],
+                    },
+                  },
+                },
+              },
+              popper: {
+                sx: {
+                  "& .MuiPaper-root": {
+                    backgroundColor: grey[800],
+                  },
+                  "& .MuiPickersCalendarHeader-root": {
+                    color: grey[50], // Month/Year color
+                  },
+                  "& .MuiDayCalendar-weekDayLabel": {
+                    color: grey[400], // Weekday label colors
+                  },
+                  "& .MuiPickersDay-root": {
+                    color: grey[50], // Day numbers color
+                  },
+                  // Remove the blue dot on selected day
+                  "& .MuiPickersDay-root.Mui-selected": {
+                    backgroundColor: '#000000 !important',
+                    color: grey[50],
+                    fontWeight: 'bold',
+                  },
+                  "& .MuiPickersDay-root.Mui-selected:hover": {
+                    backgroundColor: '#000000 !important',
+                  },
+                  // Style for today's date
+                  "& .MuiPickersDay-root.MuiPickersDay-today": {
+                    border: `1px solid ${grey[700]}`,
+                  },
+                  "& .MuiPickersDay-root:hover": {
+                    backgroundColor: grey[600],
+                  },
+                },
+              },
+            }}
+          />
           </Box>
         </LocalizationProvider>
 

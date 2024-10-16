@@ -1,44 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardContent, IconButton, Button, Typography, CircularProgress, Box } from '@mui/material';
 import { Add as AddIcon, Remove as RemoveIcon, ArrowBack as ArrowBackIcon, ArrowForward as ArrowForwardIcon } from '@mui/icons-material';
-import { BASE_URL } from '../../constants';
 import LoadingButton from '../../personalizedComponents/buttons/LoadingButton';
-
-const token = localStorage.getItem("token"); // Reemplaza con el token real
+import { addWaterIntake, getWaterIntakeHistory } from '../../api/WaterIntakeApi';
 
 const formatDateToYYYYMMDD = (date: Date) => {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+  const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
 const WaterIntakeCard: React.FC = () => {
   const [waterIntake, setWaterIntake] = useState<number>(0);
-  const [currentDate, setCurrentDate] = useState<string>(formatDateToYYYYMMDD(new Date())); // Use formatted date
+  const [currentDate, setCurrentDate] = useState<string>(formatDateToYYYYMMDD(new Date())); 
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [loadingRemove, setLoadingRemove] = useState(false);
-  const dailyGoal = 4000; // 4 litros en mililitros
+  const dailyGoal = 4000;
 
-  // Función para obtener la ingesta diaria de agua del backend
   const fetchDailyWaterIntake = async () => {
     try {
       const startDate = currentDate;
       const endDate = currentDate;
 
-      const response = await fetch(`${BASE_URL}/api/water-intake/get-water-intake-history?start_date=${startDate}&end_date=${endDate}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
+      const data = await getWaterIntakeHistory(startDate, endDate);
 
       if (data.water_intake_history.length > 0) {
         setWaterIntake(data.water_intake_history[0].quantity_in_militers || 0);
       } else {
-        setWaterIntake(0); // Si no hay ingesta registrada para el día, se muestra 0
+        setWaterIntake(0);
       }
     } catch (error) {
       console.error('Error al obtener la ingesta diaria de agua', error);
@@ -48,17 +38,8 @@ const WaterIntakeCard: React.FC = () => {
   const addWater = async () => {
     setLoadingAdd(true);
     try {
-      const response = await fetch(`${BASE_URL}/api/water-intake/add`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ quantity_in_militers: 150, date: currentDate })  // Send formatted date
-      });
-      if (response.ok) {
-        setWaterIntake(prevIntake => prevIntake + 150);
-      }
+      await addWaterIntake(currentDate, 150);
+      setWaterIntake(prevIntake => prevIntake + 150);
     } catch (error) {
       console.error('Error al agregar ingesta de agua', error);
     } finally {
@@ -66,22 +47,12 @@ const WaterIntakeCard: React.FC = () => {
     }
   };
 
-  // Función para remover ingesta de agua (150ml)
   const removeWater = async () => {
     setLoadingRemove(true);
     try {
       if (waterIntake >= 150) {
-        const response = await fetch(`${BASE_URL}/api/water-intake/add`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ quantity_in_militers: -150, date: currentDate })  // Send formatted date
-        });
-        if (response.ok) {
-          setWaterIntake(prevIntake => Math.max(prevIntake - 150, 0));
-        }
+        await addWaterIntake(currentDate, -150);
+        setWaterIntake(prevIntake => Math.max(prevIntake - 150, 0));
       }
     } catch (error) {
       console.error('Error al remover ingesta de agua', error);
@@ -92,18 +63,16 @@ const WaterIntakeCard: React.FC = () => {
 
   const handlePrevDay = () => {
     const [year, month, day] = currentDate.split('-').map(Number);
-    const prevDate = new Date(year, month - 1, day - 1); // JavaScript months are 0-indexed
-    setCurrentDate(formatDateToYYYYMMDD(prevDate)); // Update with formatted date
+    const prevDate = new Date(year, month - 1, day - 1); 
+    setCurrentDate(formatDateToYYYYMMDD(prevDate));
   };
 
-  // Navigate to next day
   const handleNextDay = () => {
     const [year, month, day] = currentDate.split('-').map(Number);
-    const nextDate = new Date(year, month - 1, day + 1); // JavaScript months are 0-indexed
-    setCurrentDate(formatDateToYYYYMMDD(nextDate)); // Update with formatted date
+    const nextDate = new Date(year, month - 1, day + 1);
+    setCurrentDate(formatDateToYYYYMMDD(nextDate)); 
   };
 
-  // Fetch water intake when the date changes
   useEffect(() => {
     fetchDailyWaterIntake();
   }, [currentDate]);

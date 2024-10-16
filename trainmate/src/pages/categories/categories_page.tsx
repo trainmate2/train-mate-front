@@ -2,24 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Button, Card, CardContent, CardHeader, Typography, TextField, InputLabel, Box, Accordion, AccordionSummary, AccordionDetails, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, MenuItem, Select, FormControl, CircularProgress, } from '@mui/material';
 import { Add as PlusIcon, Edit as EditIcon, Delete as DeleteIcon, ArrowBack as ArrowLeftIcon, ExpandMore as ExpandMoreIcon, BorderColor, } from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import {
-  FitnessCenter as DumbbellIcon,
-  SportsSoccer as BallIcon,
-  SportsBasketball as BasketballIcon,
-  SportsTennis as TennisIcon,
-  SportsKabaddi as FightIcon,
-  SportsMartialArts as MartialIcon,
-  SportsMma as MmaIcon,
-  SportsMotorsports as MotorsportsIcon,
-  Hiking as HikingIcon,
-  Sailing as SailingIcon,
-  DownhillSkiing as SkiingIcon,
-  Pool as PoolIcon,
-  Skateboarding as SkateIcon,
-  SportsRugby as RugbyIcon,
-  SportsVolleyball as VolleyballIcon,
-  Favorite as HeartIcon
-} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { grey } from '@mui/material/colors';
 import { deleteCategory, editCategory, getCategories, saveCategory } from '../../api/CategoryApi';
@@ -35,6 +17,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 
 import { muscularGroups } from "../../enums/muscularGroups";
 import PopularExercisesModal from './popular_exercise_modal';
+import LoadingAnimation from '../../personalizedComponents/loadingAnimation';
 
 interface CategoryWithExercises {
   id: string;
@@ -436,10 +419,9 @@ export default function CategoriesPage() {
         <IconButton component="a" sx={{ color: 'white' }} onClick={handleBackToHome}>
           <ArrowLeftIcon />
         </IconButton>
-        <Typography variant="h4">Categories, Exercises & Trainings</Typography>
-        <Box sx={{ width: 6 }}></Box>
+        <Typography variant="h4" sx={{ fontSize: { xs: '1.3rem', sm: '1.8rem', md: '2.5rem' }}}>Categories, Exercises & Trainings</Typography>
         <IconButton component="a" sx={{ color: 'white' }} onClick={handleTrophyButton}>
-          <EmojiEventsIcon />
+          <EmojiEventsIcon sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}/>
         </IconButton>
         <PopularExercisesModal open={openRankingModal} onClose={handleCloseRankingModal}/>
       </Box >
@@ -467,9 +449,7 @@ export default function CategoriesPage() {
 
       {
         loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-            <CircularProgress />
-          </Box>
+          <LoadingAnimation />
         ) : (
           <Box sx={{ display: 'flex', gap: 2, height: '100vh', flexDirection: { xs: 'column', sm: 'row' } }}>
             {/* Card de Categorías */}

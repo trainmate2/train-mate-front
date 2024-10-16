@@ -4,7 +4,6 @@ import grey from '@mui/material/colors/grey';
 import { saveTraining } from '../../api/TrainingApi';
 import handleCategoryIcon from '../../personalizedComponents/handleCategoryIcon';
 
-// Definición de interfaces basadas en tu estructura
 interface Exercise {
   id: string;
   calories_per_hour: number | string;

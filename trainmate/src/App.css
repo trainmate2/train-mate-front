@@ -36,3 +36,7 @@
     transform: rotate(360deg);
   }
 }
+
+.custom-brush .recharts-brush-texts text {
+  fill: #FFFFFF; /* Set text color to white */
+}

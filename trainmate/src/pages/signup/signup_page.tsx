@@ -205,13 +205,11 @@ export default function SignUp() {
                   />
                 </div>
               </div>
-
               {/* Submit Button */}
               <Button fullWidth variant="contained" type="submit">
                 Sign Up
               </Button>
             </form>
-
             <div className="mt-6 border-t pt-4">
               <p className="text-center text-sm text-white">
                 Already have an account?{" "}

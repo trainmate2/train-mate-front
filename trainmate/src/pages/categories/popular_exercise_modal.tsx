@@ -46,7 +46,7 @@ const PopularExercisesModal: React.FC<PopularExercisesModalProps> = ({ open, onC
             {/* Modal */}
             <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
                 <div className='border border-gray-600 rounded-mx'> 
-                <DialogTitle  className='bg-black text-white'>Top 5 Popular Exercises</DialogTitle>
+                <DialogTitle sx={{textAlign: 'center'}} className='bg-black text-white'>Top 5 Popular Exercises</DialogTitle>
                 <DialogContent className='bg-black '>
                     {loading ? (
                         <Box display="flex" justifyContent="center" alignItems="center" height="100%">
@@ -59,7 +59,7 @@ const PopularExercisesModal: React.FC<PopularExercisesModalProps> = ({ open, onC
                             ) : (
                                 exercises && exercises.map((exercise) => (
                                     <div key={exercise.exercise_id} className="flex items-center">
-                                        <span className="w-1/4 text-sm font-medium text-blue-600">{exercise.name}</span>
+                                        <span className="w-1/4 text-sm font-medium text-white">{exercise.name}</span>
                                         <div className="w-2/4 h-5 mx-4 bg-gray-200 rounded dark:bg-gray-700 relative">
                                             <div
                                                 className="h-5 bg-yellow-300 rounded"
