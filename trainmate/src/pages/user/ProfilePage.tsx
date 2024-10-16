@@ -190,7 +190,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+    <div className="min-h-screen bg-black from-gray-900 to-gray-800 text-white">
       <header className="p-4 flex justify-between items-center">
         <Avatar alt="User" src={require('../../images/profile_pic_2.jpg')} />
         <IconButton
@@ -221,7 +221,7 @@ export default function ProfilePage() {
         </Box>
       ) : (
           <main className="p-4 space-y-6">
-            <Card sx={{ backgroundColor: '#333', color: '#fff' }}>
+            <Card sx={{ backgroundColor: '#161616', color: '#fff' }}>
               <CardHeader title="User Profile" sx={{color: 'white'}}/>
               <CardContent>
               <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

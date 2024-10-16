@@ -62,11 +62,6 @@ function App() {
           path="/categories" 
           element={isAuthenticated ? <CategoriesPage /> : <Navigate to="/login" />} 
         />
-
-        <Route 
-          path="/calendar" 
-          element={isAuthenticated ? <CalendarPage /> : <Navigate to="/login" />} 
-        />
         
         {/* Redirect any unknown routes to login if not authenticated */}
         <Route 

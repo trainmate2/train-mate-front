@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Select, MenuItem, InputLabel, FormControl, Checkbox, ListItemText, SelectChangeEvent } from '@mui/material';
 import grey from '@mui/material/colors/grey';
 import { saveTraining } from '../../api/TrainingApi';
+import handleCategoryIcon from '../../personalizedComponents/handleCategoryIcon';
 
 // Definición de interfaces basadas en tu estructura
 interface Exercise {
@@ -117,8 +118,11 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
 
         {/* MultiSelect para categorías */}
         <FormControl fullWidth sx={{ mt: 2 }}>
-          <InputLabel>Categories</InputLabel>
+          <InputLabel id="categories">Categories</InputLabel>
           <Select
+            labelId="categories"
+            id="categories"
+            label="Categories"
             multiple
             value={selectedCategories}
             onChange={handleCategoryChange}
@@ -130,7 +134,8 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
             {categoryWithExercises.map((category) => (
               <MenuItem key={category.id} value={category.id}>
                 <Checkbox checked={selectedCategories.indexOf(category.id) > -1} />
-                <ListItemText primary={category.name} />
+                  {handleCategoryIcon(category.icon)}
+                <ListItemText primary={category.name} sx={{ml: 1}}/>
               </MenuItem>
             ))}
           </Select>
@@ -139,8 +144,11 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
         {/* Mostrar MultiSelect de ejercicios según las categorías seleccionadas */}
         {selectedCategories.map((categoryId) => (
           <FormControl key={categoryId} fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Exercises from {categoryWithExercises.find(cat => cat.id === categoryId)?.name}</InputLabel>
+            <InputLabel id={`exercises-${categoryId}`}>Exercises from {categoryWithExercises.find(cat => cat.id === categoryId)?.name}</InputLabel>
             <Select
+              labelId={`exercises-${categoryId}`}
+              id={`exercises-${categoryId}`}
+              label={`Exercises from ${categoryWithExercises.find(cat => cat.id === categoryId)?.name || "category"}`}
               multiple
               value={selectedExercises[categoryId] || []}
               onChange={handleExerciseChange(categoryId)}

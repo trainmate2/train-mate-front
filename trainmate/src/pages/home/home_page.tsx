@@ -16,7 +16,7 @@ import { grey } from '@mui/material/colors';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import CloseIcon from '@mui/icons-material/Close';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Brush } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Brush, Rectangle } from 'recharts';
 import Typography from '@mui/material/Typography';
 import ScrollArea from '@mui/material/Box';
 import { getWorkouts, saveWorkout, getWorkoutsCalories } from '../../api/WorkoutsApi';
@@ -37,6 +37,8 @@ import { top_exercises_done } from '../../functions/top_exercises_done';
 import DynamicBarChart from './bars_graph';
 import { getTrainings } from '../../api/TrainingApi';
 import { FilterCoachDialog } from './filter_coach';
+import WaterIntakeCard from './water_intake';
+import ResponsiveMenu from './menu_responsive';
 
 interface Workout {
   id: number;
@@ -139,14 +141,6 @@ export default function HomePage() {
     navigate('/categories');
   }
 
-  // Convert the date string from the format "Sun, 12 May 2024 00:00:00 GMT"
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-indexed
-    return `${day}/${month}`;
-  };
-
   const getAllWorkouts = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -206,14 +200,22 @@ export default function HomePage() {
     fetchWorkouts();
   }, [workoutsCount]);
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    return `${day}/${month}`;
+  };
+
   const formatDataForChart = () => {
     return Object.keys(caloriesPerDay)
-      .map(date => ({
-        date: formatDate(date), // Use the formatted date here
+      .map((date) => ({
+        date: formatDate(date),
+        timestamp: new Date(date).getTime(),
         Calories: caloriesPerDay[date][0],
         Minutes: caloriesPerDay[date][1],
       }))
-      .sort((b, a) => new Date(b.date.split('/').reverse().join('-')).getTime() - new Date(a.date.split('/').reverse().join('-')).getTime());
+      .sort((a, b) => a.timestamp - b.timestamp);
   };
 
   const dataForChart = useMemo(() => formatDataForChart(), [caloriesPerDay]);
@@ -500,24 +502,10 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+    <div className="min-h-screen bg-black from-gray-900 to-gray-800 text-white">
       <header className="p-4 flex justify-between items-center">
         <Avatar alt="User" src={require('../../images/profile_pic_2.jpg')} onClick={handleAvatarClick} style={{ cursor: 'pointer' }} />
-        <div>
-          <IconButton aria-label="add" onClick={handleFilterOpen}>
-            <FilterAltIcon sx={{ color: grey[50], fontSize: 40 }} className="h-24 w-24" />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <p className='p-3 text-white'>Filter By</p>
-            </div>
-          </IconButton>
-          <IconButton aria-label="add" onClick={handleClickOpen}>
-            <AddCircleOutlineIcon sx={{ color: grey[50], fontSize: 40 }} className="h-24 w-24" />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <p className='p-3 text-white'>Add New</p>
-            </div>
-          </IconButton>
-          <CalendarModal />
-        </div>
+        <ResponsiveMenu handleFilterOpen={handleFilterOpen} handleClickOpen={handleClickOpen}/>
       </header>
       <TopMiddleAlert alertText='Added workout successfully' open={alertOpen} onClose={() => setAlertOpen(false)} />
 
@@ -563,40 +551,67 @@ export default function HomePage() {
             color: '#fff',
             borderRadius: '8px',
             padding: 2,
+            maxWidth: '30vw',
+            width: '100%',
+            height: 'auto',
+            '@media (max-width: 1024px)': {
+              padding: 1,
+              maxWidth: '60vw',
+            },
+            '@media (max-width: 600px)': {
+              padding: 1,
+              maxWidth: '100vw',
+            },
           },
-        }}>
+        }}
+      >
         <DialogActions>
           <IconButton aria-label="add" onClick={handleClose}>
-            <CloseIcon sx={{ color: grey[900], fontSize: 40 }} className="h-12 w-12" />
+            <CloseIcon sx={{ color: grey[900], fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem' } }} className="h-8 w-8" />
           </IconButton>
         </DialogActions>
-        <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold', mt: -7 }}>What do you want to add?</DialogTitle>
+        
+        <DialogTitle sx={{
+          textAlign: 'center',
+          fontWeight: 'bold',
+          mt: -6,
+          fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem' },
+        }}>
+          What do you want to add?
+        </DialogTitle>
+        
         <DialogContent>
-          <Box display="flex" justifyContent="space-around" alignItems="center" mt={2}>
-            <Box textAlign="center" mx={3}>
+          <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" mt={2} px={2}>
+            <Box textAlign="center" mx={2} my={{ xs: 2, sm: 0 }}>
               <IconButton onClick={handleCategoriesClick}>
                 <Avatar
                   style={{ border: '2px solid black' }}
                   alt="New Categories"
                   src={require('../../images/Sports2.png')}
-                  sx={{ width: 150, height: 150 }}
+                  sx={{
+                    width: { xs: 120, sm: 150, md: 170 },
+                    height: { xs: 120, sm: 150, md: 170 },
+                  }}
                 />
               </IconButton>
-              <Typography variant="body1" sx={{ mt: 1, fontWeight: 'bold' }}>
-                New Category or Sport
+              <Typography variant="body1" sx={{ mt: 1, fontWeight: 'bold', fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                New Category, Exercise or Training
               </Typography>
             </Box>
 
-            <Box textAlign="center" mx={3}>
+            <Box textAlign="center" mx={2} my={{ xs: 2, sm: 0 }}>
               <IconButton onClick={handleOpenWorkoutAdding}>
                 <Avatar
                   style={{ border: '2px solid black' }}
                   alt="New Workout"
                   src={require('../../images/Exercise2.png')}
-                  sx={{ width: 150, height: 150 }}
+                  sx={{
+                    width: { xs: 120, sm: 150, md: 170 },
+                    height: { xs: 120, sm: 150, md: 170 },
+                  }}
                 />
               </IconButton>
-              <Typography variant="body1" sx={{ mt: 1, fontWeight: 'bold' }}>
+              <Typography variant="body1" sx={{ mt: 1, fontWeight: 'bold', fontSize: { xs: '0.9rem', sm: '1rem' }, mb: 3 }}>
                 New Workout
               </Typography>
             </Box>
@@ -719,7 +734,7 @@ export default function HomePage() {
         </Box>
       ) : (
         <main className="p-4 space-y-6">
-          <Card sx={{ backgroundColor: '#333', color: '#fff' }}>
+          <Card sx={{ backgroundColor: '#161616', color: '#fff' }} className='border border-gray-600' >
             <CardHeader
               title="Progress"
             />
@@ -809,8 +824,48 @@ export default function HomePage() {
                     <Tooltip />
                     <Line type="monotone" dataKey="Calories" stroke="#E43654" activeDot={{ r: 10 }} yAxisId="left" />
                     <Line type="monotone" dataKey="Minutes" stroke="#44f814" activeDot={{ r: 10 }} yAxisId="right" />
-                    <Brush dataKey="date" height={30} stroke="#E43654" y={300}/>
-                    <text x="50%" y={320} fill="grey" textAnchor="middle" fontSize="12px" >Filter date</text>
+                    <Brush dataKey="date" height={30} stroke="#00000" y={300} fill="#00000" travellerWidth={10}
+                    traveller={(props) => {
+                      const { x, y, width, height } = props;
+                      return (
+                        <g>
+                          {/* Traveller rectangle */}
+                          <rect
+                            x={x}
+                            y={y}
+                            width={width}
+                            height={height}
+                            fill="#fff"
+                            stroke="none"
+                            style={{ outline: 'none' }}
+                            tabIndex={-1}
+                          />
+                          {/* First horizontal line */}
+                          <line
+                            x1={x + 2}
+                            y1={y + height / 2 - 1}
+                            x2={x + width - 2}
+                            y2={y + height / 2 - 1}
+                            stroke="#808080"
+                            strokeWidth={1}
+                            style={{ outline: 'none' }}
+                            tabIndex={-1}
+                          />
+                          {/* Second horizontal line */}
+                          <line
+                            x1={x + 2}
+                            y1={y + height / 2 + 1}
+                            x2={x + width - 2}
+                            y2={y + height / 2 + 1}
+                            stroke="#808080"
+                            strokeWidth={1}
+                            style={{ outline: 'none' }}
+                            tabIndex={-1}
+                          />
+                        </g>
+                      );
+                    }}/>
+                    <text x="50%" y={320} fill="#ffffff" textAnchor="middle" fontSize="12px" >Filter date</text>
                   </LineChart>
                 ) : (
                   <div>
@@ -825,7 +880,7 @@ export default function HomePage() {
             </CardContent>
           </Card>
           <Box sx={{ display: 'flex', height: '100%', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
-            <Card sx={{ flex: 1, backgroundColor: '#333', color: '#fff', width: '100%', height: '100%' }}>
+            <Card sx={{ flex: 1, backgroundColor: '#161616', color: '#fff', width: '100%' }} className='border border-gray-600'>
               <CardHeader title="Workouts" />
               <CardContent>
                 <ScrollArea sx={{ maxHeight: 400, overflow: 'auto' }}>
@@ -859,7 +914,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card sx={{ flex: 1, backgroundColor: '#333', color: '#fff', width: '100%' }}>
+            <Card sx={{ flex: 1, backgroundColor: '#161616', color: '#fff', width: '100%' }} className='border border-gray-600'>
               <CardHeader title="Top Categories & Exercises done" />
               <CardContent>
               {Array.isArray(topExercisesDone) && topExercisesDone.length > 0 ? (
@@ -870,15 +925,11 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card sx={{ flex: 1, backgroundColor: '#333', color: '#fff', width: '100%' }}>
-              <CardHeader title="Water intake" />
-              <CardContent>
-                
-              </CardContent>
-            </Card>
+            <WaterIntakeCard/>
           </Box>
         </main>
       )}
     </div>
   );
 }
+
