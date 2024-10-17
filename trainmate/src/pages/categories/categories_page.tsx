@@ -18,6 +18,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { muscularGroups } from "../../enums/muscularGroups";
 import PopularExercisesModal from './popular_exercise_modal';
 import LoadingAnimation from '../../personalizedComponents/loadingAnimation';
+import app from '../../FirebaseConfig';
 
 interface CategoryWithExercises {
   id: string;
@@ -95,12 +96,16 @@ export default function CategoriesPage() {
   const handleCloseAddTrainingDialog = () => setCreateNewTraining(false);
 
   const [alertCategoryAddedOpen, setAlertCategoryAddedOpen] = useState(false);
+  const [alertCategoryFillFieldsOpen, setAlertCategoryFillFieldsOpen] = useState(false);
   const [alertExerciseAddedOpen, setAlertExerciseAddedOpen] = useState(false);
+  const [alertExerciseFillFieldsOpen, setAlertExerciseFillFieldsOpen] = useState(false);
   const [alertTrainingAddedOpen, setAlertTrainingAddedOpen] = useState(false);
   const [alertCategoryEditedOpen, setAlertCategoryEditedOpen] = useState(false);
   const [alertExerciseEditedOpen, setAlertExerciseEditedOpen] = useState(false);
-  const [alertCategoryDeletedOpen, setAlertCategoryDeletedOpen] = useState(false);
-  const [alertExerciseDeletedOpen, setAlertExerciseDeletedOpen] = useState(false);
+  const [alertCategoryDeletedSuccessOpen, setAlertCategoryDeletedSuccessOpen] = useState(false);
+  const [alertCategoryDeletedErrorOpen, setAlertCategoryDeletedErrorOpen] = useState(false);
+  const [alertExerciseDeletedSuccessOpen, setAlertExerciseDeletedSuccessOpen] = useState(false);
+  const [alertExerciseDeletedErrorOpen, setAlertExerciseDeletedErrorOpen] = useState(false);
 
   const [deleteCategoryAlertOpen, setDeleteCategoryAlertOpen] = useState(false);
   const [deleteExerciseAlertOpen, setDeleteExerciseAlertOpen] = useState(false);
@@ -158,10 +163,11 @@ export default function CategoriesPage() {
 
   const handleDeleteCategory = async (categoryId: string) => {
     try {
-      await deleteCategory(categoryId);
+      await deleteCategory(categoryId, trainings);
       setCategoryWithExercises(categoryWithExercises.filter((category) => category.id !== categoryId));
-      setAlertCategoryDeletedOpen(true);
+      setAlertCategoryDeletedSuccessOpen(true);
     } catch (error) {
+      setAlertCategoryDeletedErrorOpen(true);
       console.error('Error al eliminar la categoría:', error);
     }
   };
@@ -173,7 +179,7 @@ export default function CategoriesPage() {
 
   const handleDeleteExercise = async (exerciseId: string, categoryId: string) => {
     try {
-      await deleteExercise(exerciseId);
+      await deleteExercise(exerciseId, trainings);
       setCategoryWithExercises(
         categoryWithExercises.map((category) => {
           if (category.id === categoryId) {
@@ -185,8 +191,10 @@ export default function CategoriesPage() {
           return category;
         })
       );
-      setAlertExerciseDeletedOpen(true);
+      setAlertExerciseDeletedSuccessOpen(true);
     } catch (error) {
+      setAlertExerciseDeletedErrorOpen(true);
+      console.log('Error al eliminar el ejercicio:', error);
       console.error('Error al eliminar el ejercicio:', error);
     }
   };
@@ -268,6 +276,7 @@ export default function CategoriesPage() {
   const handleCloseAddExerciseDialog = () => {
     setAddExerciseDialogOpen(false);
     setNewExercise(null);
+    setImageFile(null)
   };
 
   const handleOpenEditCategoryDialog = (category: Category) => {
@@ -305,6 +314,9 @@ export default function CategoriesPage() {
       }
       handleCloseAddCategoryDialog();
     }
+    else {
+      setAlertCategoryFillFieldsOpen(true);
+    }
   };
 
 
@@ -313,7 +325,7 @@ export default function CategoriesPage() {
     if (newExercise) {
       if (imageFile) {
         setUploading(true); // Show loading indicator
-        const storage = getStorage();
+        const storage = getStorage(app);
         const storageRef = ref(storage, `exercises/${imageFile.name}`);
 
         // Upload the image to Firebase Storage
@@ -355,11 +367,15 @@ export default function CategoriesPage() {
           }
           handleCloseAddExerciseDialog();
         }
+        else {
+          setAlertExerciseFillFieldsOpen(true);
+        }
+      }
+      else {
+        setAlertExerciseFillFieldsOpen(true);
       }
     };
   }
-
-
 
   const handleEditCategory = async () => {
     if (editingCategory) {
@@ -382,7 +398,7 @@ export default function CategoriesPage() {
   const handleEditExercise = async () => {
     if (editingExercise) {
       try {
-        await editExercise({ name: editingExercise.name, calories_per_hour: editingExercise.calories_per_hour }, editingExercise.id);
+        await editExercise({ name: editingExercise.name, calories_per_hour: editingExercise.calories_per_hour, training_muscle: editingExercise.training_muscle }, editingExercise.id);
         setCategoryWithExercises(
           categoryWithExercises.map((category) => {
             if (category.id === editingExercise.category_id) {
@@ -416,23 +432,30 @@ export default function CategoriesPage() {
   return (
     <Box sx={{ minHeight: '100vh', 'backgroundColor': 'black', color: 'white', p: 4 }}  >
       <Box component="header" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
-        <IconButton component="a" sx={{ color: 'white' }} onClick={handleBackToHome}>
-          <ArrowLeftIcon />
-        </IconButton>
-        <Typography variant="h4" sx={{ fontSize: { xs: '1.3rem', sm: '1.8rem', md: '2.5rem' }}}>Categories, Exercises & Trainings</Typography>
+        <div className="flex items-center">
+          <IconButton component="a" sx={{ color: 'white' }} onClick={handleBackToHome}>
+            <ArrowLeftIcon />
+          </IconButton>
+          <img src={require('../../images/logo.png')} alt="Logo" width={200} height={150} className="hidden md:block"/>
+        </div>
+        <Typography variant="h4" sx={{ fontSize: { xs: '1.3rem', sm: '1.8rem', md: '2.5rem' }, ml: {xs:0, sm:-12, md:-14}}}>Categories, Exercises & Trainings</Typography>
         <IconButton component="a" sx={{ color: 'white' }} onClick={handleTrophyButton}>
           <EmojiEventsIcon sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}/>
         </IconButton>
         <PopularExercisesModal open={openRankingModal} onClose={handleCloseRankingModal}/>
       </Box >
 
-      <TopMiddleAlert alertText='Added category successfully' open={alertCategoryAddedOpen} onClose={() => setAlertCategoryAddedOpen(false)} />
-      <TopMiddleAlert alertText='Added exercise successfully' open={alertExerciseAddedOpen} onClose={() => setAlertExerciseAddedOpen(false)} />
-      <TopMiddleAlert alertText='Added training successfully' open={alertTrainingAddedOpen} onClose={() => setAlertTrainingAddedOpen(false)} />
-      <TopMiddleAlert alertText='Edited category successfully' open={alertCategoryEditedOpen} onClose={() => setAlertCategoryEditedOpen(false)} />
-      <TopMiddleAlert alertText='Edited exercise successfully' open={alertExerciseEditedOpen} onClose={() => setAlertExerciseEditedOpen(false)} />
-      <TopMiddleAlert alertText='Deleted category successfully' open={alertCategoryDeletedOpen} onClose={() => setAlertCategoryDeletedOpen(false)} />
-      <TopMiddleAlert alertText='Deleted exercise successfully' open={alertExerciseDeletedOpen} onClose={() => setAlertExerciseDeletedOpen(false)} />
+      <TopMiddleAlert alertText='Added category successfully' open={alertCategoryAddedOpen} onClose={() => setAlertCategoryAddedOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='Added exercise successfully' open={alertExerciseAddedOpen} onClose={() => setAlertExerciseAddedOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='Added training successfully' open={alertTrainingAddedOpen} onClose={() => setAlertTrainingAddedOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='Edited category successfully' open={alertCategoryEditedOpen} onClose={() => setAlertCategoryEditedOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='Edited exercise successfully' open={alertExerciseEditedOpen} onClose={() => setAlertExerciseEditedOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='Deleted category successfully' open={alertCategoryDeletedSuccessOpen} onClose={() => setAlertCategoryDeletedSuccessOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='Deleted exercise successfully' open={alertExerciseDeletedSuccessOpen} onClose={() => setAlertExerciseDeletedSuccessOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='You cannot delete an exercise that is part of a training' open={alertExerciseDeletedErrorOpen} onClose={() => setAlertExerciseDeletedErrorOpen(false)} severity='warning'/>
+      <TopMiddleAlert alertText='You cannot delete a category that has exercises in a training' open={alertCategoryDeletedErrorOpen} onClose={() => setAlertCategoryDeletedErrorOpen(false)} severity='warning'/>
+      <TopMiddleAlert alertText='Please fill all fields' open={alertCategoryFillFieldsOpen} onClose={() => setAlertCategoryFillFieldsOpen(false)} severity='warning'/>
+      <TopMiddleAlert alertText='Please fill all fields' open={alertExerciseFillFieldsOpen} onClose={() => setAlertExerciseFillFieldsOpen(false)} severity='warning'/>
 
       {
         deleteCategoryAlertOpen &&
@@ -496,6 +519,7 @@ export default function CategoriesPage() {
                             <Box key={exercise.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Typography>{exercise.name}</Typography>
+                                <Typography sx={{ fontSize: '0.7rem', marginLeft: 3 }}>({exercise.training_muscle})</Typography>
                                 <Typography sx={{ fontSize: '0.7rem', marginLeft: 3 }}>({exercise.calories_per_hour} kcal/h)</Typography>
                               </Box>
                               <Box>
@@ -759,15 +783,33 @@ export default function CategoriesPage() {
               htmlInput: { min: 1, max: 4000 }
             }}
           />
-          <InputLabel htmlFor="upload-image">Upload Exercise Image</InputLabel>
-          <input
-            accept="image/*"
-            id="upload-image"
-            type="file"
-            onChange={handleFileChange}
-            style={{ display: 'block', marginTop: '8px' }}
-          />
-          <FormControl fullWidth sx={{ marginTop: 2 }}>
+          <InputLabel htmlFor="upload-image" sx={{ mt: 2 }}>Upload Exercise Image</InputLabel>
+            <label htmlFor="upload-image" style={{ display: 'block', marginTop: '8px' }}>
+              <Button
+                variant="contained"
+                component="span"
+                sx={{
+                  backgroundColor: grey[800],
+                  color: 'black',
+                  textTransform: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                }}
+              >
+                Choose File
+              </Button>
+              <span style={{ marginLeft: '10px', color: 'black' }}>
+                {imageFile ? imageFile.name : 'No file selected'}
+              </span>
+              <input
+                accept="image/*"
+                id="upload-image"
+                type="file"
+                onChange={handleFileChange}
+                style={{ display: 'none' }} // Hide the default input button
+              />
+            </label>
+          <FormControl fullWidth sx={{ marginTop: 4 }}>
             <InputLabel id="muscle-label">Muscular Group</InputLabel>
             <Select
               labelId="muscle-label"
@@ -907,6 +949,34 @@ export default function CategoriesPage() {
                 value={editingExercise.name}
                 onChange={(e) => setEditingExercise({ ...editingExercise, name: e.target.value })}
               />
+              <FormControl fullWidth sx={{ marginTop: 2 }}>
+                <InputLabel id="muscle-label">Muscular Group</InputLabel>
+                <Select
+                  labelId="muscle-label"
+                  id="muscle"
+                  value={editingExercise.training_muscle}
+                  onChange={(e) => setEditingExercise({ ...editingExercise, training_muscle: e.target.value })}
+                  label="Muscular Group"
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        maxWidth: 300,
+                        backgroundColor: '#444',
+                        color: '#fff',
+                      },
+                    },
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Select a muscle</em>
+                  </MenuItem>
+                  {muscularGroups.map((muscle) => (
+                    <MenuItem key={muscle} value={muscle}>
+                      {muscle}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 margin="dense"
                 id="edit-exercise-calories"

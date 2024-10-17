@@ -6,9 +6,10 @@ interface TopMiddleAlertProps {
   alertText: string;
   open: boolean;
   onClose: () => void;
+  severity: "success" | "error" | "warning" | "info";
 }
 
-export default function TopMiddleAlert({ alertText, open, onClose }: TopMiddleAlertProps) {
+export default function TopMiddleAlert({ alertText, open, onClose, severity }: TopMiddleAlertProps) {
   return (
     <Snackbar
       open={open}
@@ -16,7 +17,7 @@ export default function TopMiddleAlert({ alertText, open, onClose }: TopMiddleAl
       onClose={onClose}
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
     >
-      <Alert onClose={onClose} severity="success" sx={{ width: '100%' }}>
+      <Alert onClose={onClose} severity={severity} sx={{ width: '100%' }}>
         {alertText}
       </Alert>
     </Snackbar>

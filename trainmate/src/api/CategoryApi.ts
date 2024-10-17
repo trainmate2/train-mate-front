@@ -165,7 +165,14 @@ export const getCategories = async () => {
     }
 }
 
-export const deleteCategory = async (category_id: string) => {
+export const deleteCategory = async (category_id: string, trainings: any) => {
+  // Primero hago validacion de que la categoría no tenga ejercicios que se encuentren en entrenamientos
+  const exercisesInTrainings = trainings.some((training: any) => training.exercises.some((exercise: any) => exercise.category_id === category_id));
+  console.log(exercisesInTrainings);
+  if (exercisesInTrainings) {
+    throw new Error('No se puede eliminar la categoría porque tiene ejercicios que se encuentran en entrenamientos');
+  }
+  else {
     const token = getAuthToken();
     if (!token) throw new Error('Token no encontrado');
 
@@ -209,4 +216,5 @@ export const deleteCategory = async (category_id: string) => {
     console.error('Error al eliminar categoría:', error);
     throw error;
     }
+  }
 }

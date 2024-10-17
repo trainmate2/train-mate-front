@@ -200,7 +200,7 @@ export default function ProfilePage() {
           <EditIcon sx={{ color: 'white', fontSize: 30 }} />
         </IconButton>
       </header>
-      <TopMiddleAlert alertText='Modified data successfully' open={alertOpen} onClose={() => setAlertOpen(false)}/>
+      <TopMiddleAlert alertText='Modified data successfully' open={alertOpen} onClose={() => setAlertOpen(false)} severity='success'/>
         {alertErrorWeight && 
           <div className='p-4 -mt-3'>
             <Alert severity="error">

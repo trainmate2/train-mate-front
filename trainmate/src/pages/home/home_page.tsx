@@ -111,7 +111,9 @@ export default function HomePage() {
   const navigate = useNavigate();
   const [timeRange, setTimeRange] = useState('month');
   const [open, setOpen] = useState(false);
-  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertWorkoutAddedOpen, setAlertWorkoutAddedOpen] = useState(false);
+  const [alertWorkoutAddedForAgendaOpen, setAlertWorkoutAddedForAgendaOpen] = useState(false);
+  const [alertWorkoutFillFieldsOpen, setAlertWorkoutFillFieldsOpen] = useState(false);
   const [workoutList, setWorkoutList] = useState<Workout[]>([]);
   const [caloriesPerDay, setCaloriesPerDay] = useState<{ [date: string]: [number, number] }>({});
   const [loading, setLoading] = useState(true);
@@ -377,7 +379,7 @@ export default function HomePage() {
   }
 
   const handleAddWorkout = async () => {
-    if (newWorkout.training_id && newWorkout.duration && newWorkout.date) {
+    if (newWorkout.training_id && newWorkout.duration && newWorkout.date && newWorkout.coach) {
 
       setNewWorkout({
         training_id: '',
@@ -397,7 +399,13 @@ export default function HomePage() {
           });
           console.log('Workout saved successfully');
           setWorkoutsCount((prevCount) => prevCount + 1);
-          setAlertOpen(true);
+          // Verificar si la fecha es futura para hacer alertas distintas
+          const today = new Date().toISOString().split('T')[0];
+          if (newWorkout.date > today) {
+            setAlertWorkoutAddedForAgendaOpen(true);
+          } else {
+            setAlertWorkoutAddedOpen(true);
+          }
         } else {
           console.error('No token found, unable to save workout');
         }
@@ -411,6 +419,9 @@ export default function HomePage() {
       localStorage.removeItem('calories_duration_per_day');
       localStorage.removeItem('categories_with_exercises');
       localStorage.removeItem('categories');
+    }
+    else {
+      setAlertWorkoutFillFieldsOpen(true);
     }
   };
 
@@ -515,10 +526,20 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-black from-gray-900 to-gray-800 text-white">
       <header className="p-4 flex justify-between items-center">
-        <Avatar alt="User" src={require('../../images/profile_pic_2.jpg')} onClick={handleAvatarClick} style={{ cursor: 'pointer' }} />
+        <div className="flex items-center">
+          <Avatar 
+            alt="User" 
+            src={require('../../images/profile_pic_2.jpg')} 
+            onClick={handleAvatarClick} 
+            style={{ cursor: 'pointer', marginRight: '12px' }}
+          />
+          <img src={require('../../images/logo.png')} alt="Logo" width={200} height={150} />
+        </div>
         <ResponsiveMenu handleFilterOpen={handleFilterOpen} handleClickOpen={handleClickOpen}/>
       </header>
-      <TopMiddleAlert alertText='Added workout successfully' open={alertOpen} onClose={() => setAlertOpen(false)} />
+      <TopMiddleAlert alertText='Added workout successfully' open={alertWorkoutAddedOpen} onClose={() => setAlertWorkoutAddedOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='Added workout in Agenda successfully' open={alertWorkoutAddedForAgendaOpen} onClose={() => setAlertWorkoutAddedForAgendaOpen(false)} severity='success'/>
+      <TopMiddleAlert alertText='Please fill in all the fields' open={alertWorkoutFillFieldsOpen} onClose={() => setAlertWorkoutFillFieldsOpen(false)} severity='warning'/>
 
       {/* FILTER PRINCIPAL */}
       <Dialog open={filterOpen} onClose={handleFilterClose}

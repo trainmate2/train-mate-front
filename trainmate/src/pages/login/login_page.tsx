@@ -115,7 +115,7 @@ export default function LogIn() {
   return (
     <div className="min-h-screen bg-black  from-gray-900 to-gray-800 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <TopMiddleAlert alertText='Sent email to restore password' open={alertOpen} onClose={() => setAlertOpen(false)} />
+        <TopMiddleAlert alertText='Sent email to restore password' open={alertOpen} onClose={() => setAlertOpen(false)} severity='success' />
         <div className="bg-black border border-gray-600 shadow-lg rounded-lg overflow-hidden">
           <div className="bg-black p-4 flex items-center justify-center">
             <Dumbbell className="h-8 w-8 text-white mr-2" />
