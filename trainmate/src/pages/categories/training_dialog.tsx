@@ -3,6 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, S
 import grey from '@mui/material/colors/grey';
 import { saveTraining } from '../../api/TrainingApi';
 import handleCategoryIcon from '../../personalizedComponents/handleCategoryIcon';
+import LoadingButton from '../../personalizedComponents/buttons/LoadingButton';
 
 interface Exercise {
   id: string;
@@ -24,12 +25,12 @@ interface CategoryWithExercises {
 }
 
 interface Trainings {
-    id: string;
-    name: string;
-    owner: string;
-    calories_per_hour_mean: number;
-    exercises: Exercise[];
-  }
+  id: string;
+  name: string;
+  owner: string;
+  calories_per_hour_mean: number;
+  exercises: Exercise[];
+}
 
 interface CreateTrainingDialogProps {
   createNewTraining: boolean;
@@ -43,6 +44,7 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
   const [selectedCategories, setSelectedCategories] = React.useState<string[]>([]);
   const [selectedExercises, setSelectedExercises] = React.useState<{ [key: string]: string[] }>({});
   const [trainingName, setTrainingName] = React.useState<string>('');
+  const [loadingButton, setLoadingButton] = React.useState<boolean>(false)
 
   const handleCategoryChange = (event: SelectChangeEvent<string[]>) => {
     const { value } = event.target;
@@ -67,16 +69,19 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
       }, [] as Exercise[]),
     };
     if (newTraining && newTraining.name) {
-        try {
-          const training = await saveTraining(newTraining);
-          const trainingWithId = { ...newTraining, id: training.id, calories_per_hour_mean: training.calories_per_hour_mean, owner: training.owner };
-          setTrainings((prevTrainings) => [...prevTrainings, trainingWithId]);
-          setAlertTrainingAddedOpen(true);
-        } catch (error) {
-          console.error('Error al guardar el entrenamiento:', error);
-        }
-        handleClose();
+      try {
+        setLoadingButton(true)
+        const training = await saveTraining(newTraining);
+        const trainingWithId = { ...newTraining, id: training.id, calories_per_hour_mean: training.calories_per_hour_mean, owner: training.owner };
+        setTrainings((prevTrainings) => [...prevTrainings, trainingWithId]);
+        setAlertTrainingAddedOpen(true);
+      } catch (error) {
+        setLoadingButton(false)
+        console.error('Error al guardar el entrenamiento:', error);
       }
+      setLoadingButton(false)
+      handleClose();
+    }
   };
 
   const handleClose = () => {
@@ -113,11 +118,28 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
           variant="standard"
           value={trainingName}
           onChange={(e) => setTrainingName(e.target.value)}
+          InputLabelProps={{
+            style: { color: '#fff' }, // Color del label (Duration)
+          }}
+          InputProps={{
+            style: { color: '#fff' }, // Color del texto dentro del input
+          }}
+          slotProps={{
+            htmlInput: { min: 1, max: 1000 }
+          }}
         />
 
         {/* MultiSelect para categorías */}
         <FormControl fullWidth sx={{ mt: 2 }}>
-          <InputLabel id="categories">Categories</InputLabel>
+          <InputLabel id="categories" sx={{
+            color: '#fff',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#fff',
+            },
+            '& .MuiSvgIcon-root': {
+              color: '#fff',
+            }
+          }}>Categories</InputLabel>
           <Select
             labelId="categories"
             id="categories"
@@ -129,12 +151,35 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
               const category = categoryWithExercises.find(c => c.id === catId);
               return category ? category.name : '';
             }).join(', ')}
+
+            sx={{
+              marginBottom: 1,
+              color: '#fff',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#fff',
+              },
+              '& .MuiSvgIcon-root': {
+                color: '#fff',
+              }
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  maxWidth: 300,
+                  padding: 1,
+                  backgroundColor: '#444',
+                  color: '#fff',
+                },
+              },
+            }}
           >
             {categoryWithExercises.map((category) => (
               <MenuItem key={category.id} value={category.id}>
                 <Checkbox checked={selectedCategories.indexOf(category.id) > -1} />
-                  {handleCategoryIcon(category.icon)}
-                <ListItemText primary={category.name} sx={{ml: 1}}/>
+                {handleCategoryIcon(category.icon)}
+                <ListItemText primary={category.name} sx={{ ml: 1 }} />
               </MenuItem>
             ))}
           </Select>
@@ -143,7 +188,19 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
         {/* Mostrar MultiSelect de ejercicios según las categorías seleccionadas */}
         {selectedCategories.map((categoryId) => (
           <FormControl key={categoryId} fullWidth sx={{ mt: 2 }}>
-            <InputLabel id={`exercises-${categoryId}`}>Exercises from {categoryWithExercises.find(cat => cat.id === categoryId)?.name}</InputLabel>
+            <InputLabel id={`exercises-${categoryId}`}
+
+              sx={{
+                color: '#fff',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#fff',
+                },
+                '& .MuiSvgIcon-root': {
+                  color: '#fff',
+                }
+              }}
+
+            >Exercises from {categoryWithExercises.find(cat => cat.id === categoryId)?.name}</InputLabel>
             <Select
               labelId={`exercises-${categoryId}`}
               id={`exercises-${categoryId}`}
@@ -156,6 +213,28 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
                 const exercise = category?.exercises.find(ex => ex.id === exerciseId);
                 return exercise ? exercise.name : '';
               }).join(', ')}
+              sx={{
+                marginBottom: 1,
+                color: '#fff',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#fff',
+                },
+                '& .MuiSvgIcon-root': {
+                  color: '#fff',
+                }
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    maxWidth: 300,
+                    padding: 1,
+                    backgroundColor: '#444',
+                    color: '#fff',
+                  },
+                },
+              }}
             >
               {categoryWithExercises.find(cat => cat.id === categoryId)?.exercises.map((exercise) => (
                 <MenuItem key={exercise.id} value={exercise.id}>
@@ -168,8 +247,26 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
         ))}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleCreateTraining}>Create Training</Button>
+        <LoadingButton
+            isLoading={false}
+            onClick={handleClose}
+            label="SAVE CHANGES"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
+        <LoadingButton
+            isLoading={loadingButton}
+            onClick={handleCreateTraining}
+            label="SAVE CHANGES"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
       </DialogActions>
     </Dialog>
   );

@@ -16,7 +16,7 @@ const WaterIntakeCard: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<string>(formatDateToYYYYMMDD(new Date())); 
   const [loadingAdd, setLoadingAdd] = useState(false);
   const [loadingRemove, setLoadingRemove] = useState(false);
-  const dailyGoal = 4000;
+  const dailyGoal = 2000;
 
   const fetchDailyWaterIntake = async () => {
     try {
@@ -114,10 +114,10 @@ const WaterIntakeCard: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Typography variant="h6" component="div" color="#fff">
+              {/* <Typography variant="h6" component="div" color="white">
                 {Math.round(intakePercentage)}%
-              </Typography>
-              <Typography variant="body2" color="fff" sx={{ml: 1}}>
+              </Typography> */}
+              <Typography variant="body2" color="grey">
                 {waterIntake}ml
               </Typography>
             </Box>

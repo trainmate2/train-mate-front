@@ -18,7 +18,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import { muscularGroups } from "../../enums/muscularGroups";
 import PopularExercisesModal from './popular_exercise_modal';
 import LoadingAnimation from '../../personalizedComponents/loadingAnimation';
-import app from '../../FirebaseConfig';
+import LoadingButton from '../../personalizedComponents/buttons/LoadingButton';
 
 interface CategoryWithExercises {
   id: string;
@@ -111,6 +111,7 @@ export default function CategoriesPage() {
   const [deleteExerciseAlertOpen, setDeleteExerciseAlertOpen] = useState(false);
   const [categoryDataToDelete, setCategoryDataToDelete] = useState('');
   const [exerciseDataToDelete, setExerciseDataToDelete] = useState<{ exerciseId: string, categoryId: string } | null>(null);
+  const [loadingButton, setLoadingButton] = useState<boolean>(false)
 
   // Add state for the modal to display the image
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -302,6 +303,7 @@ export default function CategoriesPage() {
       // Para evitar recargar la pagina de vuelta, hago un save en el front, mientras igualmente se guarda en el back. Esto es para evitar recarga lenta
       // y que se muestre inmediatamente la nueva categoría agregada
       try {
+        setLoadingButton(true)
         const category = await saveCategory(newCategory);
         setNewCategory({ name: '', icon: '' });
         setCategoryWithExercises((prev) => [
@@ -310,8 +312,10 @@ export default function CategoriesPage() {
         ]);
         setAlertCategoryAddedOpen(true);
       } catch (error) {
+        setLoadingButton(false)
         console.error('Error al guardar la categoría:', error)
       }
+      setLoadingButton(false)
       handleCloseAddCategoryDialog();
     }
     else {
@@ -324,8 +328,10 @@ export default function CategoriesPage() {
   const handleAddExercise = async () => {
     if (newExercise) {
       if (imageFile) {
-        setUploading(true); // Show loading indicator
-        const storage = getStorage(app);
+        setUploading(true);
+        setLoadingButton(true) // Show loading indicator
+        setLoadingButton(true)
+        const storage = getStorage();
         const storageRef = ref(storage, `exercises/${imageFile.name}`);
 
         // Upload the image to Firebase Storage
@@ -362,10 +368,13 @@ export default function CategoriesPage() {
             );
             setNewExercise(null);
             setAlertExerciseAddedOpen(true);
+            setLoadingButton(false)
           } catch (error) {
             console.error('Error al guardar el ejercicio:', error);
+            setLoadingButton(false)
           }
           handleCloseAddExerciseDialog();
+          setLoadingButton(false)
         }
         else {
           setAlertExerciseFillFieldsOpen(true);
@@ -398,6 +407,7 @@ export default function CategoriesPage() {
   const handleEditExercise = async () => {
     if (editingExercise) {
       try {
+        setLoadingButton(true)
         await editExercise({ name: editingExercise.name, calories_per_hour: editingExercise.calories_per_hour, training_muscle: editingExercise.training_muscle }, editingExercise.id);
         setCategoryWithExercises(
           categoryWithExercises.map((category) => {
@@ -413,11 +423,14 @@ export default function CategoriesPage() {
           })
         );
         setAlertExerciseEditedOpen(true);
+        setLoadingButton(false)
       } catch (error) {
+        setLoadingButton(false)
         console.error('Error al editar el ejercicio:', error);
       }
       setEditingExercise(null);
       handleCloseEditExerciseDialog();
+      setLoadingButton(false)
     }
   };
 
@@ -432,17 +445,14 @@ export default function CategoriesPage() {
   return (
     <Box sx={{ minHeight: '100vh', 'backgroundColor': 'black', color: 'white', p: 4 }}  >
       <Box component="header" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
-        <div className="flex items-center">
-          <IconButton component="a" sx={{ color: 'white' }} onClick={handleBackToHome}>
-            <ArrowLeftIcon />
-          </IconButton>
-          <img src={require('../../images/logo.png')} alt="Logo" width={200} height={150} className="hidden md:block"/>
-        </div>
-        <Typography variant="h4" sx={{ fontSize: { xs: '1.3rem', sm: '1.8rem', md: '2.5rem' }, ml: {xs:0, sm:-12, md:-14}}}>Categories, Exercises & Trainings</Typography>
-        <IconButton component="a" sx={{ color: 'white' }} onClick={handleTrophyButton}>
-          <EmojiEventsIcon sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}/>
+        <IconButton component="a" sx={{ color: 'white' }} onClick={handleBackToHome}>
+          <ArrowLeftIcon />
         </IconButton>
-        <PopularExercisesModal open={openRankingModal} onClose={handleCloseRankingModal}/>
+        <Typography variant="h4" sx={{ fontSize: { xs: '1.3rem', sm: '1.8rem', md: '2.5rem' } }}>Categories, Exercises & Trainings</Typography>
+        <IconButton component="a" sx={{ color: 'white' }} onClick={handleTrophyButton}>
+          <EmojiEventsIcon sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }} />
+        </IconButton>
+        <PopularExercisesModal open={openRankingModal} onClose={handleCloseRankingModal} />
       </Box >
 
       <TopMiddleAlert alertText='Added category successfully' open={alertCategoryAddedOpen} onClose={() => setAlertCategoryAddedOpen(false)} severity='success'/>
@@ -645,7 +655,13 @@ export default function CategoriesPage() {
             id="category-name"
             label="Name"
             InputLabelProps={{
-              style: { color: '#b0b0b0' },
+              style: { color: '#fff' }, // Color del label (Duration)
+            }}
+            InputProps={{
+              style: { color: '#fff' }, // Color del texto dentro del input
+            }}
+            slotProps={{
+              htmlInput: { min: 1, max: 1000 }
             }}
             type="text"
             fullWidth
@@ -655,7 +671,15 @@ export default function CategoriesPage() {
             sx={{ mb: 3 }}
           />
           <FormControl fullWidth margin="dense">
-            <InputLabel id="icon-label">Icon</InputLabel>
+            <InputLabel id="icon-label " sx={{
+              color: '#fff',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#fff',
+              },
+              '& .MuiSvgIcon-root': {
+                color: '#fff',
+              }
+            }}>Icon</InputLabel>
             <Select
               labelId="icon-label"
               id="icon"
@@ -670,7 +694,14 @@ export default function CategoriesPage() {
                     maxWidth: 300,
                     padding: 1, */
                     backgroundColor: '#444',
-                    color: '#fff',
+                    color: '#fff', // Color del texto en Select
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#fff', // Color del borde
+                    },
+                    '& .MuiSvgIcon-root': {
+                      color: '#fff', // Color del ícono (flecha de selección)
+                    }
+
                   },
                 },
               }}
@@ -698,8 +729,26 @@ export default function CategoriesPage() {
           </FormControl >
         </DialogContent >
         <DialogActions>
-          <Button onClick={handleCloseAddCategoryDialog}>Cancel</Button>
-          <Button onClick={handleAddCategory}>Add Category</Button>
+          <LoadingButton
+            isLoading={false}
+            onClick={handleCloseAddCategoryDialog}
+            label="SAVE CHANGES"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
+          <LoadingButton
+            isLoading={loadingButton}
+            onClick={handleAddCategory}
+            label="SAVE CHANGES"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
         </DialogActions>
       </Dialog >
 
@@ -725,6 +774,15 @@ export default function CategoriesPage() {
             fullWidth
             variant="standard"
             value={newExercise?.name || ''}
+            InputLabelProps={{
+              style: { color: '#fff' }, // Color del label (Duration)
+            }}
+            InputProps={{
+              style: { color: '#fff' }, // Color del texto dentro del input
+            }}
+            slotProps={{
+              htmlInput: { min: 1, max: 1000 }
+            }}
             onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value, calories_per_hour: newExercise?.calories_per_hour || 1, category_id: newExercise?.category_id || '', id: '', training_muscle: newExercise?.training_muscle || '' })}
           />
           <TextField
@@ -779,36 +837,16 @@ export default function CategoriesPage() {
               }
             }}
             placeholder="Kcal per Hour"
+            InputLabelProps={{
+              style: { color: '#fff' }, // Color del label (Duration)
+            }}
+            InputProps={{
+              style: { color: '#fff' }, // Color del texto dentro del input
+            }}
             slotProps={{
               htmlInput: { min: 1, max: 4000 }
             }}
           />
-          <InputLabel htmlFor="upload-image" sx={{ mt: 2 }}>Upload Exercise Image</InputLabel>
-            <label htmlFor="upload-image" style={{ display: 'block', marginTop: '8px' }}>
-              <Button
-                variant="contained"
-                component="span"
-                sx={{
-                  backgroundColor: grey[800],
-                  color: 'black',
-                  textTransform: 'none',
-                  padding: '8px 16px',
-                  borderRadius: '8px',
-                }}
-              >
-                Choose File
-              </Button>
-              <span style={{ marginLeft: '10px', color: 'black' }}>
-                {imageFile ? imageFile.name : 'No file selected'}
-              </span>
-              <input
-                accept="image/*"
-                id="upload-image"
-                type="file"
-                onChange={handleFileChange}
-                style={{ display: 'none' }} // Hide the default input button
-              />
-            </label>
           <FormControl fullWidth sx={{ marginTop: 4 }}>
             <InputLabel id="muscle-label">Muscular Group</InputLabel>
             <Select
@@ -832,11 +870,24 @@ export default function CategoriesPage() {
                     maxWidth: 300,
                     backgroundColor: '#444',
                     color: '#fff',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#fff',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      color: '#fff',
+                    }
                   },
                 },
               }}
               sx={{
-                // color: '#fff',
+                marginBottom: 1,
+                color: '#fff',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#fff',
+                },
+                '& .MuiSvgIcon-root': {
+                  color: '#fff',
+                }
               }}
             >
               <MenuItem value="">
@@ -848,11 +899,46 @@ export default function CategoriesPage() {
                 </MenuItem>
               ))}
             </Select>
+
           </FormControl>
+          <InputLabel htmlFor="upload-image" sx={{
+            color: '#fff',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#fff',
+            },
+            '& .MuiSvgIcon-root': {
+              color: '#fff',
+            }
+          }} >Upload Exercise Image</InputLabel>
+          <input
+            accept="image/*"
+            id="upload-image"
+            type="file"
+            onChange={handleFileChange}
+            style={{ display: 'block', marginTop: '8px' }}
+          />
         </DialogContent >
         <DialogActions>
-          <Button onClick={handleCloseAddExerciseDialog}>Cancel</Button>
-          <Button onClick={handleAddExercise}>Add Exercise</Button>
+          <LoadingButton
+            isLoading={false}
+            onClick={handleCloseAddExerciseDialog}
+            label="CANCEL"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
+          <LoadingButton
+            isLoading={loadingButton}
+            onClick={handleAddExercise}
+            label="ADD EXERCISE"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
         </DialogActions>
       </Dialog >
 
@@ -880,6 +966,15 @@ export default function CategoriesPage() {
               value={editingCategory.name}
               onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
               sx={{ mb: 3 }}
+              InputLabelProps={{
+                style: { color: '#fff' }, // Color del label (Duration)
+              }}
+              InputProps={{
+                style: { color: '#fff' }, // Color del texto dentro del input
+              }}
+              slotProps={{
+                htmlInput: { min: 1, max: 1000 }
+              }}
             />
             <FormControl fullWidth margin="dense">
               <InputLabel id="icon-label">Icon</InputLabel>
@@ -919,8 +1014,8 @@ export default function CategoriesPage() {
           </DialogContent>
         )}
         <DialogActions>
-          <Button onClick={handleCloseEditCategoryDialog}>Cancel</Button>
-          <Button onClick={handleEditCategory}>Save Changes</Button>
+          <Button onClick={handleCloseEditCategoryDialog} sx={{ color: '#fff' }}>Cancel</Button>
+          <Button onClick={handleEditCategory} sx={{ color: '#fff' }}>Save Changes</Button>
         </DialogActions>
       </Dialog >
 
@@ -1021,8 +1116,26 @@ export default function CategoriesPage() {
           )
         }
         <DialogActions>
-          <Button onClick={handleCloseEditExerciseDialog}>Cancel</Button>
-          <Button onClick={handleEditExercise}>Save Changes</Button>
+          <LoadingButton
+            isLoading={false}
+            onClick={handleCloseEditExerciseDialog}
+            label="CANCEL"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
+          <LoadingButton
+            isLoading={loadingButton}
+            onClick={handleEditExercise}
+            label="SAVE CHANGES"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
         </DialogActions>
       </Dialog >
 

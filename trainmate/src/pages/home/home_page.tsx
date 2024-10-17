@@ -41,6 +41,7 @@ import WaterIntakeCard from './water_intake';
 import ResponsiveMenu from './menu_responsive';
 import LoadingAnimation from '../../personalizedComponents/loadingAnimation';
 import '../../App.css';
+import LoadingButton from '../../personalizedComponents/buttons/LoadingButton';
 
 interface Workout {
   id: number;
@@ -136,6 +137,8 @@ export default function HomePage() {
   const [topExercisesDone, setTopExercisesDone] = useState<topCategoriesWithExercises[]>([]);
   const [trainings, setTrainings] = useState<Trainings[]>([]);
   const [selectedTraining, setSelectedTraining] = useState<Trainings | null>(null);
+  const [loadingButton, setLoadingButton] = useState<boolean>(false)
+
 
   const handleAvatarClick = () => {
     navigate('/profile');
@@ -266,7 +269,7 @@ export default function HomePage() {
 
   const handleFilterTrainingClose = (selectedTraining: { id: string }) => {
     setFilterTrainingOpen(false);
-    
+
     if (selectedTraining) {
       let allWorkoutsList = JSON.parse(localStorage.getItem('workouts') || '[]');
 
@@ -275,7 +278,7 @@ export default function HomePage() {
       }
 
       const filteredWorkouts = allWorkoutsList.filter((workout: Workout) => workout.training_id === selectedTraining?.id);
-      
+
       if (filteredWorkouts.length === 0) {
         setWorkoutList([]);
         setCaloriesPerDay({});
@@ -316,7 +319,7 @@ export default function HomePage() {
 
     if (selectedCoachInFilter) {
       const filteredWorkouts = allWorkoutsList.filter((workout: Workout) => workout.coach === selectedCoachInFilter);
-      
+
       if (filteredWorkouts.length === 0) {
         setWorkoutList([]);
         setCaloriesPerDay({});
@@ -338,7 +341,7 @@ export default function HomePage() {
 
     if (selectedTrainingInFilter) {
       const filteredWorkouts = allWorkoutsList.filter((workout: Workout) => workout.training_id === selectedTrainingInFilter.id);
-      
+
       if (filteredWorkouts.length === 0) {
         setWorkoutList([]);
         setCaloriesPerDay({});
@@ -379,7 +382,8 @@ export default function HomePage() {
   }
 
   const handleAddWorkout = async () => {
-    if (newWorkout.training_id && newWorkout.duration && newWorkout.date && newWorkout.coach) {
+    if (newWorkout.training_id && newWorkout.duration && newWorkout.date) {
+      setLoadingButton(true)
 
       setNewWorkout({
         training_id: '',
@@ -407,12 +411,15 @@ export default function HomePage() {
             setAlertWorkoutAddedOpen(true);
           }
         } else {
+          setLoadingButton(false)
           console.error('No token found, unable to save workout');
         }
       } catch (error) {
+        setLoadingButton(false)
         console.error('Error saving workout:', error);
       }
 
+      setLoadingButton(false)
       handleCloseWorkoutAdding();
       handleClose();
       localStorage.removeItem('workouts');
@@ -470,7 +477,7 @@ export default function HomePage() {
     const top_exercises_done_for_graph = top_exercises_done(workoutList, categoryWithExercises);
     console.log(top_exercises_done_for_graph);
     setTopExercisesDone(top_exercises_done_for_graph.topCategoriesWithExercises);
-  },[workoutList, categoryWithExercises]);
+  }, [workoutList, categoryWithExercises]);
 
   const getAllTrainings = async () => {
     try {
@@ -510,10 +517,10 @@ export default function HomePage() {
     const fetchTrainings = async () => {
       try {
         const trainings = await getAllTrainings();
-          if (trainings) {
-            setTrainings(trainings);
-            console.log(trainings);
-          }
+        if (trainings) {
+          setTrainings(trainings);
+          console.log(trainings);
+        }
       } catch (error) {
         console.error('Error al obtener entrenamientos:', error);
       } finally {
@@ -526,16 +533,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-black from-gray-900 to-gray-800 text-white">
       <header className="p-4 flex justify-between items-center">
-        <div className="flex items-center">
-          <Avatar 
-            alt="User" 
-            src={require('../../images/profile_pic_2.jpg')} 
-            onClick={handleAvatarClick} 
-            style={{ cursor: 'pointer', marginRight: '12px' }}
-          />
-          <img src={require('../../images/logo.png')} alt="Logo" width={200} height={150} />
-        </div>
-        <ResponsiveMenu handleFilterOpen={handleFilterOpen} handleClickOpen={handleClickOpen}/>
+        <Avatar alt="User" src={require('../../images/profile_pic_2.jpg')} onClick={handleAvatarClick} style={{ cursor: 'pointer' }} />
+        <ResponsiveMenu handleFilterOpen={handleFilterOpen} handleClickOpen={handleClickOpen} />
       </header>
       <TopMiddleAlert alertText='Added workout successfully' open={alertWorkoutAddedOpen} onClose={() => setAlertWorkoutAddedOpen(false)} severity='success'/>
       <TopMiddleAlert alertText='Added workout in Agenda successfully' open={alertWorkoutAddedForAgendaOpen} onClose={() => setAlertWorkoutAddedForAgendaOpen(false)} severity='success'/>
@@ -555,10 +554,10 @@ export default function HomePage() {
         <DialogContent>
           <Box display="flex" justifyContent="space-around" alignItems="center" mt={2} >
             <Box textAlign="center" mx={3}>
-              <Button sx={{ backgroundColor: grey[700], borderColor: grey[900]}} onClick={() => setFilterTrainingOpen(true)} variant="contained">Training</Button>
+              <Button sx={{ backgroundColor: grey[700], borderColor: grey[900] }} onClick={() => setFilterTrainingOpen(true)} variant="contained">Training</Button>
             </Box>
             <Box textAlign="center" mx={3}>
-              <Button sx={{ backgroundColor: grey[700], borderColor: grey[900]}} onClick={() => setFilterCoachOpen(true)} variant="contained">Coach</Button>
+              <Button sx={{ backgroundColor: grey[700], borderColor: grey[900] }} onClick={() => setFilterCoachOpen(true)} variant="contained">Coach</Button>
             </Box>
             {/* <Box textAlign="center" mx={3}>
               <Button sx={{ backgroundColor: grey[700], borderColor: grey[900]}} onClick={() => setFilterExerciseOpen(true)} variant="contained">Exercise</Button>
@@ -567,11 +566,11 @@ export default function HomePage() {
         </DialogContent>
       </Dialog>
 
-      <FilterTrainingDialog filterTrainingOpen={filterTrainingOpen} handleFilterTrainingClose={handleFilterTrainingClose} selectedTrainingInFilter={selectedTrainingInFilter} 
-      setSelectedTrainingInFilter={setSelectedTrainingInFilter} trainings={trainings} handleFilterClose={handleFilterClose}/>
+      <FilterTrainingDialog filterTrainingOpen={filterTrainingOpen} handleFilterTrainingClose={handleFilterTrainingClose} selectedTrainingInFilter={selectedTrainingInFilter}
+        setSelectedTrainingInFilter={setSelectedTrainingInFilter} trainings={trainings} handleFilterClose={handleFilterClose} />
 
-      <FilterCoachDialog filterCoachOpen={filterCoachOpen} handleFilterCoachClose={handleFilterCoachClose} selectedCoachInFilter={selectedCoachInFilter} 
-      setSelectedCoachInFilter={setSelectedCoachInFilter} coaches={coaches} handleFilterClose={handleFilterClose}/>
+      <FilterCoachDialog filterCoachOpen={filterCoachOpen} handleFilterCoachClose={handleFilterCoachClose} selectedCoachInFilter={selectedCoachInFilter}
+        setSelectedCoachInFilter={setSelectedCoachInFilter} coaches={coaches} handleFilterClose={handleFilterClose} />
 
       {/* <FilterExerciseDialog filterExerciseOpen={filterExerciseOpen} handleFilterExerciseClose={handleFilterExerciseClose} selectedExerciseInFilter={selectedExerciseInFilter}
       setSelectedExerciseInFilter={setSelectedExerciseInFilter} handleFilterClose={handleFilterClose} workoutList={workoutList}/> */}
@@ -602,7 +601,7 @@ export default function HomePage() {
             <CloseIcon sx={{ color: grey[900], fontSize: { xs: '1.2rem', sm: '1.5rem', md: '2rem' } }} className="h-8 w-8" />
           </IconButton>
         </DialogActions>
-        
+
         <DialogTitle sx={{
           textAlign: 'center',
           fontWeight: 'bold',
@@ -611,7 +610,7 @@ export default function HomePage() {
         }}>
           What do you want to add?
         </DialogTitle>
-        
+
         <DialogContent>
           <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" mt={2} px={2}>
             <Box textAlign="center" mx={2} my={{ xs: 2, sm: 0 }}>
@@ -654,20 +653,28 @@ export default function HomePage() {
         PaperProps={{
           sx: {
             backgroundColor: grey[800],
-            color: '#fff',
-            borderRadius: '8px',
+            color: '#fff', // Esto ajusta el color del texto principal
             padding: 2,
           },
-        }}>
+        }} className='border border-gray-600 rounded'>
         <DialogTitle sx={{ color: '#fff', textAlign: 'center' }}>Add New Workout</DialogTitle>
-        <DialogContent>
+        <DialogContent className='text-white'>
 
           <Select
             fullWidth
             value={selectedTraining?.id || ""}
             onChange={(e) => { setSelectedTraining(trainings.find((training) => training.id === e.target.value) || null); setNewWorkout({ ...newWorkout, training_id: e.target.value || '' }) }}
             displayEmpty
-            sx={{ marginBottom: 1 }}
+            sx={{
+              marginBottom: 1,
+              color: '#fff', // Color del texto en Select
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#fff', // Color del borde
+              },
+              '& .MuiSvgIcon-root': {
+                color: '#fff', // Color del ícono (flecha de selección)
+              }
+            }}
             MenuProps={{
               PaperProps: {
                 sx: {
@@ -676,7 +683,7 @@ export default function HomePage() {
                   maxWidth: 300,
                   padding: 1,
                   backgroundColor: '#444',
-                  color: '#fff',
+                  color: '#fff', // Color de los textos en el menú desplegable
                 },
               },
             }}
@@ -694,8 +701,18 @@ export default function HomePage() {
           <Select
             fullWidth
             value={coachSelected}
-            onChange={(e) => {setCoachSelected(e.target.value); setNewWorkout({ ...newWorkout, coach: e.target.value })}}
+            onChange={(e) => { setCoachSelected(e.target.value); setNewWorkout({ ...newWorkout, coach: e.target.value }) }}
             displayEmpty
+            sx={{
+              marginBottom: 1,
+              color: '#fff',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#fff',
+              },
+              '& .MuiSvgIcon-root': {
+                color: '#fff',
+              }
+            }}
             MenuProps={{
               PaperProps: {
                 sx: {
@@ -741,8 +758,19 @@ export default function HomePage() {
             }}
             placeholder="In minutes"
             type="number"
+            InputLabelProps={{
+              style: { color: '#fff' }, // Color del label (Duration)
+            }}
+            InputProps={{
+              style: { color: '#fff' }, // Color del texto dentro del input
+            }}
             slotProps={{
               htmlInput: { min: 1, max: 1000 }
+            }}
+            sx={{
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#fff', // Color del borde
+              },
             }}
           />
           <TextField
@@ -752,11 +780,40 @@ export default function HomePage() {
             type="date"
             value={newWorkout.date}
             onChange={(e) => setNewWorkout({ ...newWorkout, date: e.target.value })}
+            InputLabelProps={{
+              style: { color: '#fff' }, // Color del label (Date)
+            }}
+            InputProps={{
+              style: { color: '#fff' }, // Color del texto dentro del input
+            }}
+            sx={{
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#fff',
+              },
+            }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseWorkoutAdding}>Cancel</Button>
-          <Button onClick={handleAddWorkout}>Add Workout</Button>
+          <LoadingButton
+            isLoading={false}
+            onClick={handleCloseWorkoutAdding}
+            label="CANCEL"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
+          <LoadingButton
+            isLoading={loadingButton}
+            onClick={handleAddWorkout}
+            label="ADD NEW WORKOUT"
+            icon={<></>}
+            borderColor="border-transparent"
+            borderWidth="border"
+            bgColor="bg-transparent"
+            color="text-white"
+          />
         </DialogActions>
       </Dialog>
 
@@ -771,20 +828,20 @@ export default function HomePage() {
             <CardContent>
 
               {(selectedTrainingInFilter && selectedTrainingInFilter.name) ? (
-                <Box 
-                  sx={{ 
-                  display: 'inline-flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  backgroundColor: grey[700], 
-                  borderRadius: '8px', 
-                  padding: 2, 
-                  marginBottom: 2,
-                  height: 50,
-                  width: 'auto',
-                  maxWidth: '100%',
-                  overflow: 'hidden',
-                  marginRight: 2
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: grey[700],
+                    borderRadius: '8px',
+                    padding: 2,
+                    marginBottom: 2,
+                    height: 50,
+                    width: 'auto',
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                    marginRight: 2
                   }}
                 >
                   <Typography variant="h6" noWrap>{selectedTrainingInFilter?.name}</Typography>
@@ -797,19 +854,19 @@ export default function HomePage() {
               )}
 
               {(selectedCoachInFilter) ? (
-                <Box 
-                  sx={{ 
-                  display: 'inline-flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  backgroundColor: grey[700], 
-                  borderRadius: '8px', 
-                  padding: 2, 
-                  marginBottom: 2,
-                  height: 50,
-                  width: 'auto',
-                  maxWidth: '100%',
-                  overflow: 'hidden',
+                <Box
+                  sx={{
+                    display: 'inline-flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: grey[700],
+                    borderRadius: '8px',
+                    padding: 2,
+                    marginBottom: 2,
+                    height: 50,
+                    width: 'auto',
+                    maxWidth: '100%',
+                    overflow: 'hidden',
                   }}
                 >
                   <Typography variant="h6" noWrap>{selectedCoachInFilter}</Typography>
@@ -849,53 +906,53 @@ export default function HomePage() {
                   <LineChart data={dataForChart} margin={{ top: 10, right: 0, left: 0, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" stroke="#fff" tick={{ dy: 13 }} />
-                    <YAxis stroke="#E43654" yAxisId="left" tick={{ fontWeight: 'bold' }}/>
-                    <YAxis stroke="#44f814" orientation="right" yAxisId="right" tick={{ fontWeight: 'bold' }}/>
+                    <YAxis stroke="#E43654" yAxisId="left" tick={{ fontWeight: 'bold' }} />
+                    <YAxis stroke="#44f814" orientation="right" yAxisId="right" tick={{ fontWeight: 'bold' }} />
                     <Tooltip />
                     <Line type="monotone" dataKey="Calories" stroke="#E43654" activeDot={{ r: 10 }} yAxisId="left" />
                     <Line type="monotone" dataKey="Minutes" stroke="#44f814" activeDot={{ r: 10 }} yAxisId="right" />
                     <Brush dataKey="date" height={30} stroke="#000000" y={300} fill="#161616" travellerWidth={10}
-                    className="custom-brush"
-                    traveller={(props) => {
-                      const { x, y, width, height } = props;
-                      return (
-                        <g>
-                          {/* Traveller rectangle */}
-                          <rect
-                            x={x}
-                            y={y}
-                            width={width}
-                            height={height}
-                            fill="#fff"
-                            stroke="none"
-                            style={{ outline: 'none' }}
-                            tabIndex={-1}
-                          />
-                          {/* First horizontal line */}
-                          <line
-                            x1={x + 2}
-                            y1={y + height / 2 - 1}
-                            x2={x + width - 2}
-                            y2={y + height / 2 - 1}
-                            stroke="#808080"
-                            strokeWidth={1}
-                            style={{ outline: 'none' }}
-                            tabIndex={-1}
-                          />
-                          {/* Second horizontal line */}
-                          <line
-                            x1={x + 2}
-                            y1={y + height / 2 + 1}
-                            x2={x + width - 2}
-                            y2={y + height / 2 + 1}
-                            stroke="#808080"
-                            strokeWidth={1}
-                            style={{ outline: 'none' }}
-                            tabIndex={-1}
-                          />
-                        </g>
-                      );
-                    }}/>
+                      className="custom-brush"
+                      traveller={(props) => {
+                        const { x, y, width, height } = props;
+                        return (
+                          <g>
+                            {/* Traveller rectangle */}
+                            <rect
+                              x={x}
+                              y={y}
+                              width={width}
+                              height={height}
+                              fill="#fff"
+                              stroke="none"
+                              style={{ outline: 'none' }}
+                              tabIndex={-1}
+                            />
+                            {/* First horizontal line */}
+                            <line
+                              x1={x + 2}
+                              y1={y + height / 2 - 1}
+                              x2={x + width - 2}
+                              y2={y + height / 2 - 1}
+                              stroke="#808080"
+                              strokeWidth={1}
+                              style={{ outline: 'none' }}
+                              tabIndex={-1}
+                            />
+                            {/* Second horizontal line */}
+                            <line
+                              x1={x + 2}
+                              y1={y + height / 2 + 1}
+                              x2={x + width - 2}
+                              y2={y + height / 2 + 1}
+                              stroke="#808080"
+                              strokeWidth={1}
+                              style={{ outline: 'none' }}
+                              tabIndex={-1}
+                            />
+                          </g>
+                        );
+                      }} />
                     <text x="50%" y={320} fill="#ffffff" textAnchor="middle" fontSize="12px" >Filter date</text>
                   </LineChart>
                 ) : (
@@ -921,17 +978,17 @@ export default function HomePage() {
                         <div className="flex-1">
                           <Divider sx={{ backgroundColor: 'gray', marginY: 1 }} />
                           <Box sx={{ display: 'flex', flexDirection: { xs: 'row', sm: 'row' }, justifyContent: 'space-between', width: '100%', marginBottom: 1 }}>
-                            <Typography variant="h6" color="#81d8d0" sx={{ flex: 1, fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' }}}>{workout.training.name}</Typography>
+                            <Typography variant="h6" color="#81d8d0" sx={{ flex: 1, fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' } }}>{workout.training.name}</Typography>
                             <Typography variant="h6" color='#44f814' sx={{ flex: 1, textAlign: 'left', fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' } }}>{workout.duration} min</Typography>
                             <Typography variant="h6" color='#E43654' sx={{ flex: 1, textAlign: 'left', fontSize: { xs: '1rem', sm: '1.2rem', md: '1.4rem' } }}>{workout.total_calories} kcal</Typography>
                             <Typography variant="subtitle1" color='gray' sx={{ flex: 1, textAlign: 'right', fontSize: { xs: '0.8rem', sm: '1rem', md: '1.2rem' } }}>{formatDate(workout.date)} </Typography>
                           </Box>
                           <Typography variant="body2">
                             {workout.training.exercises.map((exercise: any, index: number) => (
-                            <span key={exercise.id}>
-                              {exercise.name}
-                              {index < workout.training.exercises.length - 1 && ' - '}
-                            </span>
+                              <span key={exercise.id}>
+                                {exercise.name}
+                                {index < workout.training.exercises.length - 1 && ' - '}
+                              </span>
                             ))}
                           </Typography>
                           <Typography variant="body2" color="gray">Coach: {workout.coach}</Typography>
@@ -948,15 +1005,15 @@ export default function HomePage() {
             <Card sx={{ flex: 1, backgroundColor: '#161616', color: '#fff', width: '100%' }} className='border border-gray-600'>
               <CardHeader title="Top Categories & Exercises done" />
               <CardContent>
-              {Array.isArray(topExercisesDone) && topExercisesDone.length > 0 ? (
-                <DynamicBarChart topExercisesDone={topExercisesDone}/>
-              ) : (
-                <Typography variant="body2" color="gray">No workouts available</Typography>
-              )}
+                {Array.isArray(topExercisesDone) && topExercisesDone.length > 0 ? (
+                  <DynamicBarChart topExercisesDone={topExercisesDone} />
+                ) : (
+                  <Typography variant="body2" color="gray">No workouts available</Typography>
+                )}
               </CardContent>
             </Card>
 
-            <WaterIntakeCard/>
+            <WaterIntakeCard />
           </Box>
         </main>
       )}

@@ -11,6 +11,7 @@ export const FilterTrainingDialog = ({ filterTrainingOpen, handleFilterTrainingC
             color: '#fff',
             borderRadius: '8px',
             padding: 2,
+            width:'550px'
           },
         }}>
         <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>Filter By Training</DialogTitle>
@@ -25,7 +26,15 @@ export const FilterTrainingDialog = ({ filterTrainingOpen, handleFilterTrainingC
               handleFilterClose();
             }}
             displayEmpty
-            sx={{ marginBottom: 1 }}
+            sx={{ marginBottom: 1,
+              color: '#fff', // Color del texto en Select
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#fff', // Color del borde
+              },
+              '& .MuiSvgIcon-root': {
+                color: '#fff', // Color del ícono (flecha de selección)
+              }
+             }}
             MenuProps={{
               PaperProps: {
                 sx: {
