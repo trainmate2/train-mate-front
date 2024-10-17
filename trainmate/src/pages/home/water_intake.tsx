@@ -114,10 +114,10 @@ const WaterIntakeCard: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Typography variant="h6" component="div" color="textPrimary">
+              <Typography variant="h6" component="div" color="#fff">
                 {Math.round(intakePercentage)}%
               </Typography>
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="body2" color="fff" sx={{ml: 1}}>
                 {waterIntake}ml
               </Typography>
             </Box>
