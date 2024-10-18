@@ -445,15 +445,20 @@ export default function CategoriesPage() {
   return (
     <Box sx={{ minHeight: '100vh', 'backgroundColor': 'black', color: 'white', p: 4 }}  >
       <Box component="header" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
-        <IconButton component="a" sx={{ color: 'white' }} onClick={handleBackToHome}>
-          <ArrowLeftIcon />
-        </IconButton>
-        <Typography variant="h4" sx={{ fontSize: { xs: '1.3rem', sm: '1.8rem', md: '2.5rem' } }}>Categories, Exercises & Trainings</Typography>
+
+      <div className="flex items-center">
+      <IconButton component="a" sx={{ color: 'white' }} onClick={handleBackToHome}>
+            <ArrowLeftIcon />
+          </IconButton>
+          <img src={require('../../images/logo.png')} alt="Logo" width={200} height={150} className="hidden md:block"/>
+        </div>
+        <Typography variant="h4" sx={{ fontSize: { xs: '1.3rem', sm: '1.8rem', md: '2.5rem' }, ml: {xs:0, sm:-12, md:-14}}}>Categories, Exercises & Trainings</Typography>
         <IconButton component="a" sx={{ color: 'white' }} onClick={handleTrophyButton}>
-          <EmojiEventsIcon sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }} />
+          <EmojiEventsIcon sx={{ fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' } }}/>
         </IconButton>
-        <PopularExercisesModal open={openRankingModal} onClose={handleCloseRankingModal} />
+        <PopularExercisesModal open={openRankingModal} onClose={handleCloseRankingModal}/>
       </Box >
+
 
       <TopMiddleAlert alertText='Added category successfully' open={alertCategoryAddedOpen} onClose={() => setAlertCategoryAddedOpen(false)} severity='success'/>
       <TopMiddleAlert alertText='Added exercise successfully' open={alertExerciseAddedOpen} onClose={() => setAlertExerciseAddedOpen(false)} severity='success'/>
@@ -732,7 +737,7 @@ export default function CategoriesPage() {
           <LoadingButton
             isLoading={false}
             onClick={handleCloseAddCategoryDialog}
-            label="SAVE CHANGES"
+            label="CANCEL"
             icon={<></>}
             borderColor="border-transparent"
             borderWidth="border"
@@ -901,22 +906,32 @@ export default function CategoriesPage() {
             </Select>
 
           </FormControl>
-          <InputLabel htmlFor="upload-image" sx={{
-            color: '#fff',
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: '#fff',
-            },
-            '& .MuiSvgIcon-root': {
-              color: '#fff',
-            }
-          }} >Upload Exercise Image</InputLabel>
-          <input
-            accept="image/*"
-            id="upload-image"
-            type="file"
-            onChange={handleFileChange}
-            style={{ display: 'block', marginTop: '8px' }}
-          />
+          <InputLabel htmlFor="upload-image" sx={{ mt: 2, color: '#fff' }}>Upload Exercise Image</InputLabel>
+            <label htmlFor="upload-image" style={{ display: 'block', marginTop: '8px' }}>
+              <Button
+                variant="contained"
+                component="span"
+                sx={{
+                  backgroundColor: grey[800],
+                  color: '#fff',
+                  textTransform: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                }}
+              >
+                Choose File
+              </Button>
+              <span style={{ marginLeft: '10px', color: '#fff' }}>
+                {imageFile ? imageFile.name : 'No file selected'}
+              </span>
+              <input
+                accept="image/*"
+                id="upload-image"
+                type="file"
+                onChange={handleFileChange}
+                style={{ display: 'none' }} // Hide the default input button
+              />
+            </label>
         </DialogContent >
         <DialogActions>
           <LoadingButton

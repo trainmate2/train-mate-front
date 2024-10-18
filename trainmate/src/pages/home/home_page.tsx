@@ -533,7 +533,15 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-black from-gray-900 to-gray-800 text-white">
       <header className="p-4 flex justify-between items-center">
-        <Avatar alt="User" src={require('../../images/profile_pic_2.jpg')} onClick={handleAvatarClick} style={{ cursor: 'pointer' }} />
+        <div className="flex items-center">
+          <Avatar 
+            alt="User" 
+            src={require('../../images/profile_pic_2.jpg')} 
+            onClick={handleAvatarClick} 
+            style={{ cursor: 'pointer', marginRight: '12px' }}
+          />
+          <img src={require('../../images/logo.png')} alt="Logo" width={200} height={150} />
+        </div>
         <ResponsiveMenu handleFilterOpen={handleFilterOpen} handleClickOpen={handleClickOpen} />
       </header>
       <TopMiddleAlert alertText='Added workout successfully' open={alertWorkoutAddedOpen} onClose={() => setAlertWorkoutAddedOpen(false)} severity='success'/>

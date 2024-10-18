@@ -250,7 +250,7 @@ const CreateTrainingDialog: React.FC<CreateTrainingDialogProps> = ({ createNewTr
         <LoadingButton
             isLoading={false}
             onClick={handleClose}
-            label="SAVE CHANGES"
+            label="CANCEL"
             icon={<></>}
             borderColor="border-transparent"
             borderWidth="border"
