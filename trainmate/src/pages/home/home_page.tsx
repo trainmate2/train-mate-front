@@ -42,6 +42,7 @@ import ResponsiveMenu from './menu_responsive';
 import LoadingAnimation from '../../personalizedComponents/loadingAnimation';
 import '../../App.css';
 import LoadingButton from '../../personalizedComponents/buttons/LoadingButton';
+import { getFilteredData } from './dates_filter';
 
 interface Workout {
   id: number;
@@ -140,6 +141,7 @@ export default function HomePage() {
   const [loadingButton, setLoadingButton] = useState<boolean>(false)
 
 
+
   const handleAvatarClick = () => {
     navigate('/profile');
   };
@@ -163,6 +165,17 @@ export default function HomePage() {
       return [];
     }
   };
+
+  useEffect(() => {
+    const updateTimeRange = () => {
+      setTimeRange(window.innerWidth < 768 ? 'WEEKLY' : 'TWO_WEEKS');
+    };
+    updateTimeRange(); // Set initially
+    window.addEventListener('resize', updateTimeRange);
+
+    return () => window.removeEventListener('resize', updateTimeRange);
+  }, []);
+  
 
   useEffect(() => {
     const fetchWorkouts = async () => {
@@ -911,7 +924,7 @@ export default function HomePage() {
 
               <ResponsiveContainer width="100%" height={340} >
                 {Array.isArray(workoutList) && workoutList.length > 0 ? (
-                  <LineChart data={dataForChart} margin={{ top: 10, right: 0, left: 0, bottom: 40 }}>
+                  <LineChart data={getFilteredData(dataForChart, timeRange)} margin={{ top: 10, right: 0, left: 0, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" stroke="#fff" tick={{ dy: 13 }} />
                     <YAxis stroke="#E43654" yAxisId="left" tick={{ fontWeight: 'bold' }} />

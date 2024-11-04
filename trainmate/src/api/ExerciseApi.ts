@@ -106,8 +106,9 @@ export const getExerciseFromCategory = async (category_id: String) => {
     }
   };
 
-export const editExercise = async (exerciseData: { name: string, calories_per_hour: number | string, training_muscle: string }, exercise_id: string) => {
+export const editExercise = async (exerciseData: { name: string, calories_per_hour: number | string, training_muscle: string, image_url: string }, exercise_id: string) => {
         
+        console.log(exerciseData)
         const token = getAuthToken();
         if (!token) throw new Error('Token no encontrado');
     

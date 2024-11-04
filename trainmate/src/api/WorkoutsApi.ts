@@ -163,3 +163,44 @@ export const getWorkoutsCalories = async (token: string, startDate?: string, end
   }
 };
 
+
+export const cancelWorkout = async (token: string, workoutId: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/cancel-workout/${workoutId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 403 || response.status === 401) {
+      console.log('Token expired, attempting to renew...');
+      const newToken = await refreshAuthToken();
+      const retryResponse = await fetch(`${BASE_URL}/cancel-workout/${workoutId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${newToken}`,
+        },
+      });
+
+      if (!retryResponse.ok) {
+        const errorData = await retryResponse.json();
+        throw new Error(errorData.error || 'Error cancelling workout');
+      }
+
+      const retryData = await retryResponse.json();
+      return retryData;
+    }
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error cancelling workout');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error cancelling workout:', error);
+    throw error;
+  }
+};

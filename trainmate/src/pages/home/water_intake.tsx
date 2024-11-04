@@ -18,6 +18,9 @@ const WaterIntakeCard: React.FC = () => {
   const [loadingRemove, setLoadingRemove] = useState(false);
   const dailyGoal = 2000;
 
+  const todayDate = formatDateToYYYYMMDD(new Date()); // Current date for comparison
+
+
   const fetchDailyWaterIntake = async () => {
     try {
       const startDate = currentDate;
@@ -36,28 +39,26 @@ const WaterIntakeCard: React.FC = () => {
   };
 
   const addWater = async () => {
-    setLoadingAdd(true);
-    try {
-      await addWaterIntake(currentDate, 150);
-      setWaterIntake(prevIntake => prevIntake + 150);
-    } catch (error) {
-      console.error('Error al agregar ingesta de agua', error);
-    } finally {
-      setLoadingAdd(false);
+    if (currentDate === todayDate) { // Only allow if today
+      setLoadingAdd(true);
+      try {
+        await addWaterIntake(currentDate, 150);
+        setWaterIntake(prevIntake => prevIntake + 150);
+      } finally {
+        setLoadingAdd(false);
+      }
     }
   };
 
   const removeWater = async () => {
-    setLoadingRemove(true);
-    try {
-      if (waterIntake >= 150) {
+    if (currentDate === todayDate && waterIntake >= 150) { // Only allow if today
+      setLoadingRemove(true);
+      try {
         await addWaterIntake(currentDate, -150);
         setWaterIntake(prevIntake => Math.max(prevIntake - 150, 0));
+      } finally {
+        setLoadingRemove(false);
       }
-    } catch (error) {
-      console.error('Error al remover ingesta de agua', error);
-    } finally {
-      setLoadingRemove(false);
     }
   };
 
@@ -131,6 +132,8 @@ const WaterIntakeCard: React.FC = () => {
             onClick={removeWater}
             label="Remove 150ml"
             icon={<RemoveIcon />}
+            disabled={currentDate !== todayDate}
+            tooltipMessage="You can only remove water for today's date"
             borderColor="border-red-600"
             borderWidth="border"
             bgColor="bg-transparent"
@@ -141,6 +144,8 @@ const WaterIntakeCard: React.FC = () => {
             onClick={addWater}
             label="Add 150ml"
             icon={<AddIcon />}
+            disabled={currentDate !== todayDate}
+            tooltipMessage="You can only add water for today's date"
             borderColor="border-green-600"
             borderWidth="border"
             bgColor="bg-transparent"
