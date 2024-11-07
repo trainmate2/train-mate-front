@@ -29,7 +29,7 @@ export default function AreYouSureAlert({areYouSureTitle, areYouSureText, open, 
       >
         <DialogTitle sx={{ color: '#fff', textAlign: 'center' }} id="alert-dialog-title">{areYouSureTitle}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText id="alert-dialog-description" sx={{color: 'white'}}>
             {areYouSureText}
           </DialogContentText>
         </DialogContent>

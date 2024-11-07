@@ -2,6 +2,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Typogra
 import { grey } from '@mui/material/colors';
 import WorkspacePremiumTwoToneIcon from '@mui/icons-material/WorkspacePremiumTwoTone';
 import { physicalChallenges, workoutChallenges } from '../enums/challenges';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 interface Challenges {
   id: number;
@@ -54,7 +55,7 @@ export default function ChallengeModal({ pageName, listOfChallenges, open, handl
                 sx={{
                   mb: 3,
                   p: 2,
-                  backgroundColor: challenge.state ? grey[900] : grey[700],
+                  backgroundColor: challenge.state ? grey[700] : grey[900],
                   borderRadius: 2,
                   border: `1px solid ${challenge.state ? '#AE8625' : grey[600]}`,
                 }}
@@ -70,7 +71,7 @@ export default function ChallengeModal({ pageName, listOfChallenges, open, handl
                   <Typography
                     variant="h6"
                     sx={{
-                      color: challenge.state ? '#fff' : grey[400],
+                      color: challenge.state ? grey[400] : '#fff',
                       fontWeight: 'bold',
                     }}
                   >
@@ -85,9 +86,17 @@ export default function ChallengeModal({ pageName, listOfChallenges, open, handl
                     <Typography variant="body2" sx={{ color: grey[400], mb: 1 }}>
                       <strong>Description:</strong> {challengeDetails[2]}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: '#AE8625', fontWeight: 'bold' }}>
-                      <strong>Badge:</strong> {challengeDetails[3]}
-                    </Typography>
+                    <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                      <Typography variant="body2" sx={{ color: '#AE8625', fontWeight: 'bold' }}>
+                        <strong>Badge:</strong> {challengeDetails[3]}
+                      </Typography>
+                      {challenge.state ? <CheckCircleIcon 
+                        sx={{
+                          color: '#AE8625',
+                          mr: 1,
+                        }}
+                      /> : null}
+                    </Box>
                   </>
                 )}
               </Box>

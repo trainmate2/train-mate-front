@@ -54,7 +54,7 @@ const DynamicBarChart = ({ topExercisesDone }) => {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
         <YAxis />
-        <Tooltip />
+        <Tooltip contentStyle={{ backgroundColor: 'black', borderRadius: '5px' }} labelStyle={{ color: 'white' }}/>
         {/* <Legend /> */}
         {uniqueExercises.map((exercise, index) => (
           <Bar key={exercise} dataKey={exercise} stackId="a" fill={getRandomColor(index)} />
