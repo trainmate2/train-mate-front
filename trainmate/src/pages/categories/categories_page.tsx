@@ -167,6 +167,8 @@ export default function CategoriesPage() {
       await deleteCategory(categoryId, trainings);
       setCategoryWithExercises(categoryWithExercises.filter((category) => category.id !== categoryId));
       setAlertCategoryDeletedSuccessOpen(true);
+      localStorage.removeItem('categories');
+      localStorage.removeItem('categories_with_exercises');
     } catch (error) {
       setAlertCategoryDeletedErrorOpen(true);
       console.error('Error al eliminar la categoría:', error);
@@ -193,6 +195,7 @@ export default function CategoriesPage() {
         })
       );
       setAlertExerciseDeletedSuccessOpen(true);
+      localStorage.removeItem('categories_with_exercises'); // Ya que se actualizaron exercises, hago que después se vuelva a cargar
     } catch (error) {
       setAlertExerciseDeletedErrorOpen(true);
       console.log('Error al eliminar el ejercicio:', error);
@@ -311,6 +314,8 @@ export default function CategoriesPage() {
           { ...category, exercises: [] }
         ]);
         setAlertCategoryAddedOpen(true);
+        localStorage.removeItem('categories');
+        localStorage.removeItem('categories_with_exercises');
       } catch (error) {
         setLoadingButton(false)
         console.error('Error al guardar la categoría:', error)
@@ -368,7 +373,9 @@ export default function CategoriesPage() {
             );
             setNewExercise(null);
             setAlertExerciseAddedOpen(true);
-            setLoadingButton(false)
+            setLoadingButton(false);
+            localStorage.removeItem('categories');
+            localStorage.removeItem('categories_with_exercises');
           } catch (error) {
             console.error('Error al guardar el ejercicio:', error);
             setLoadingButton(false)
@@ -396,6 +403,8 @@ export default function CategoriesPage() {
           )
         );
         setAlertCategoryEditedOpen(true);
+        localStorage.removeItem('categories');
+        localStorage.removeItem('categories_with_exercises');
       } catch (error) {
         console.error('Error al editar la categoría:', error);
       }
@@ -447,18 +456,20 @@ export default function CategoriesPage() {
         setAlertExerciseEditedOpen(true);
         setImageFile(null);
         setLoadingButton(false);
+        handleCloseEditExerciseDialog();
         setLoading(true);
         const trainings = await getAllTrainings();
         if (trainings) {
           setTrainings(trainings);
         }
         setLoading(false);
+        localStorage.removeItem('categories');
+        localStorage.removeItem('categories_with_exercises');
       } catch (error) {
         setLoadingButton(false);
         console.error('Error al editar el ejercicio:', error);
       }
       setEditingExercise(null);
-      handleCloseEditExerciseDialog();
       setLoadingButton(false);
     }
   };
@@ -472,9 +483,8 @@ export default function CategoriesPage() {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', 'backgroundColor': 'black', color: 'white', p: 4 }}  >
+    <Box sx={{ 'backgroundColor': 'black', color: 'white', p: 4 }}  >
       <Box component="header" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 6 }}>
-
         <div className="flex items-center">
           <IconButton component="a" sx={{ color: 'white' }} onClick={handleBackToHome}>
             <ArrowLeftIcon />
@@ -520,9 +530,9 @@ export default function CategoriesPage() {
         loading ? (
           <LoadingAnimation />
         ) : (
-          <Box sx={{ display: 'flex', gap: 2, height: '100vh', flexDirection: { xs: 'column', sm: 'row' } }}>
+          <Box sx={{ display: 'flex', gap: 2, height: '100%', flexDirection: { xs: 'column', sm: 'row' } }}>
             {/* Card de Categorías */}
-            <Card sx={{ flex: 1, backgroundColor: '#161616', color: '#fff', width: '100%', height: 'calc(100vh - 200px)' }} >
+            <Card sx={{ flex: 1, backgroundColor: '#161616', color: '#fff', width: '100%', height: '100%' }} >
               <CardHeader
                 title="Categories"
                 titleTypographyProps={{ fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.5rem' }, variant: 'h6' }}
@@ -536,7 +546,7 @@ export default function CategoriesPage() {
                 }
               />
               <CardContent>
-                <Box sx={{ height: 'calc(100vh - 300px)', overflowY: 'auto' }}>
+                <Box sx={{ height: 'calc(102vh - 300px)', overflowY: 'auto' }}>
                   {categoryWithExercises.map((category) => (
                     <Accordion key={category.id} sx={{ backgroundColor: "#161616", color: 'white' }} className='border border-gray-600'>
                       <AccordionSummary
@@ -623,7 +633,7 @@ export default function CategoriesPage() {
             </Dialog>
 
             {/* Nueva Card de Trainings */}
-            <Card sx={{ flex: 1, backgroundColor: '#161616', color: '#fff', width: '100%', height: 'calc(100vh - 200px)' }}>
+            <Card sx={{ flex: 1, backgroundColor: '#161616', color: '#fff', width: '100%', height: '100%' }}>
               <CardHeader
                 title="Trainings"
                 titleTypographyProps={{ fontSize: { xs: '1.2rem', sm: '1.3rem', md: '1.5rem' }, variant: 'h6' }}
@@ -637,7 +647,7 @@ export default function CategoriesPage() {
                 }
               />
               <CardContent>
-                <Box sx={{ height: 'calc(100vh - 300px)', overflowY: 'auto' }}>
+                <Box sx={{ height: 'calc(102vh - 300px)', overflowY: 'auto' }}>
                   {trainings.map((training) => (
                     <Accordion key={training.id} sx={{ backgroundColor: '#161616', color: 'white' }} className='border border-gray-600' >
                       <AccordionSummary
@@ -1158,22 +1168,32 @@ export default function CategoriesPage() {
                   htmlInput: { min: 1, max: 4000 }
                 }}
               />
-              <InputLabel htmlFor="upload-image" sx={{
-                color: '#fff',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#fff',
-                },
-                '& .MuiSvgIcon-root': {
-                  color: '#fff',
-                }
-              }} >Edit Exercise Image</InputLabel>
-              <input
-                accept="image/*"
-                id="upload-image"
-                type="file"
-                onChange={handleFileChange}
-                style={{ display: 'block', marginTop: '8px' }}
-              />
+              <InputLabel htmlFor="upload-image" sx={{ mt: 2, color: '#fff' }}>Edit Exercise Image</InputLabel>
+              <label htmlFor="upload-image" style={{ display: 'block', marginTop: '8px' }}>
+                <Button
+                  variant="contained"
+                  component="span"
+                  sx={{
+                    backgroundColor: grey[800],
+                    color: '#fff',
+                    textTransform: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                  }}
+                >
+                  Choose File
+                </Button>
+                <span style={{ marginLeft: '10px', color: '#fff' }}>
+                  {imageFile ? imageFile.name : 'No file selected'}
+                </span>
+                <input
+                  accept="image/*"
+                  id="upload-image"
+                  type="file"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }} // Hide the default input button
+                />
+              </label>
             </DialogContent>
           )
         }

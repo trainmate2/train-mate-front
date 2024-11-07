@@ -3,6 +3,8 @@ import { refreshAuthToken } from "../utils/AuthUtils";
 
 export const saveWorkout = async (token: string, workoutData: { training_id: string, coach: string, duration: number, date: string }) => {
   try {
+
+    console.log(workoutData.date)
     const response = await fetch(`${BASE_URL}/save-workout`, {
       method: 'POST',
       headers: {
