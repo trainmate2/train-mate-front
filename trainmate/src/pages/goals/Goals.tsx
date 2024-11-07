@@ -17,6 +17,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { Tooltip as TooltipMui } from '@mui/material'; // Alias Tooltip if needed
 import SmsFailedIcon from '@mui/icons-material/SmsFailed';
 import PieChartIcon from '@mui/icons-material/PieChart';
+import TopMiddleAlert from '../../personalizedComponents/TopMiddleAlert';
 
 
 
@@ -28,6 +29,7 @@ interface GoalsProps {
     onClose: () => void;
     open: boolean;
     openForm: () => void;
+
 }
 
 const GoalsModal: React.FC<GoalsProps> = ({ showDrawer, onClose, open, openForm }) => {
@@ -39,10 +41,9 @@ const GoalsModal: React.FC<GoalsProps> = ({ showDrawer, onClose, open, openForm 
     const [loading, setLoading] = useState(false);
     const [showPieChart, setShowPieChart] = useState(false);
 
-    const handleDateChange = async (dates: [Dayjs | null, Dayjs | null]) => {
-        setDateRange(dates);
-        setLoading(true);
 
+    const fetchGoals = async () => {
+        setLoading(true);
         try {
             const goals = await getGoals();
             setSelectedGoals(goals);
@@ -52,6 +53,11 @@ const GoalsModal: React.FC<GoalsProps> = ({ showDrawer, onClose, open, openForm 
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDateChange = async (dates: [Dayjs | null, Dayjs | null]) => {
+        setDateRange(dates);
+        fetchGoals();
     };
 
     useEffect(() => {
@@ -94,6 +100,11 @@ const GoalsModal: React.FC<GoalsProps> = ({ showDrawer, onClose, open, openForm 
     // Filter incomplete goals
     const incompleteGoals = filteredGoals.filter(
         (goal) => !goal.completed && dayjs(goal.end_date).isBefore(today, 'day')
+    );
+
+
+    const pendingGoals = filteredGoals.filter(
+        (goal) => !goal.completed && !incompleteGoals.includes(goal)
     );
 
 
@@ -381,7 +392,7 @@ const GoalsModal: React.FC<GoalsProps> = ({ showDrawer, onClose, open, openForm 
                         </Divider>
                         <Divider sx={{ backgroundColor: grey[600] }} />
                         <Collapse in={showPending}>
-                            {filteredGoals.filter((goal) => !goal.completed).map((goal: Goal) => (
+                            {pendingGoals.filter((goal) => !goal.completed).map((goal: Goal) => (
                                 <Box
                                     key={goal.id}
                                     sx={{
@@ -395,7 +406,7 @@ const GoalsModal: React.FC<GoalsProps> = ({ showDrawer, onClose, open, openForm 
                                 >
                                     <Typography sx={{ color: '#81d8d0', fontWeight: 'bold' }}>{goal.title}</Typography>
                                     <Typography sx={{ color: grey[400] }}>{goal.description}</Typography>
-                                    <Typography sx={{ color: '#44f814' }}>{`Start: ${dayjs(goal.start_date).format('DD/MM/YYYY')} - End: ${dayjs(goal.end_date).format('DD/MM/YYYY')}`}</Typography>
+                                    <Typography sx={{ color: 'yellow' }}>{`Start: ${dayjs(goal.start_date).format('DD/MM/YYYY')} - End: ${dayjs(goal.end_date).format('DD/MM/YYYY')}`}</Typography>
                                     <LoadingButton
                                         isLoading={false}
                                         onClick={() => handleDone(goal.id)}
@@ -429,7 +440,7 @@ const GoalsModal: React.FC<GoalsProps> = ({ showDrawer, onClose, open, openForm 
                                         >
                                             <Typography sx={{ color: '#81d8d0', fontWeight: 'bold' }}>{goal.title}</Typography>
                                             <Typography sx={{ color: grey[400] }}>{goal.description}</Typography>
-                                            <Typography sx={{ color: '#44f814' }}>{`Start: ${dayjs(goal.start_date).format('DD/MM/YYYY')} - End: ${dayjs(goal.end_date).format('DD/MM/YYYY')}`}</Typography>
+                                            <Typography sx={{ color: '#E43654' }}>{`Start: ${dayjs(goal.start_date).format('DD/MM/YYYY')} - End: ${dayjs(goal.end_date).format('DD/MM/YYYY')}`}</Typography>
                                         </Box>
                                     ))}
                                 </Divider>

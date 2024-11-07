@@ -3,6 +3,7 @@ import { Box, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Butt
 import { grey } from '@mui/material/colors';
 import { saveGoal } from '../../api/GoalsApi';
 import dayjs from 'dayjs';
+import TopMiddleAlert from '../../personalizedComponents/TopMiddleAlert';
 
 interface ChallengeFormProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({ isOpen, onCancel, onSave 
     description: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [alertSaveGoalErrorOpen, setAlertSaveGoalErrorOpen] = useState(false);
+  const [alertSaveGoalErrorMessage, setAlertSaveGoalErrorMessage] = useState('');
 
   // Handler for TextField changes
   const handleTextFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,80 +42,94 @@ const ChallengeForm: React.FC<ChallengeFormProps> = ({ isOpen, onCancel, onSave 
       setFormData({ startDate: '', endDate: '', title: '', description: '' }); // Clear form data
     } catch (error) {
       console.error('Error saving goal:', error);
+      setAlertSaveGoalErrorMessage('Failed to save goal. ' + error);
+      setAlertSaveGoalErrorOpen(true); // Open the alert
     } finally {
       setIsLoading(false);
     }
   };
+  
 
 
   return (
-    <Dialog open={isOpen} onClose={onCancel} PaperProps={{
-      sx: {
-        backgroundColor: grey[800],
-        color: '#fff',
-        padding: 2,
-        maxWidth: '600px',
-        minWidth: '300px',
-      },
-    }}>
-      <DialogTitle sx={{ color: '#fff', textAlign: 'center', fontSize: '2rem' }}>Add New Goal</DialogTitle>
-      <DialogContent dividers>
-        <TextField
-          label="Title"
-          name="title"
-          fullWidth
-          variant="outlined"
-          value={formData.title}
-          onChange={handleTextFieldChange}
-          InputLabelProps={{ style: { color: '#fff' } }}
-          InputProps={{ style: { color: '#fff', backgroundColor: grey[800] } }}
-          sx={{ mb: 3 }}
+      <>
+        <Dialog open={isOpen} onClose={onCancel} PaperProps={{
+          sx: {
+            backgroundColor: grey[800],
+            color: '#fff',
+            padding: 2,
+            maxWidth: '600px',
+            minWidth: '300px',
+          },
+        }}>
+          <DialogTitle sx={{ color: '#fff', textAlign: 'center', fontSize: '2rem' }}>Add New Goal</DialogTitle>
+          <DialogContent dividers>
+            <TextField
+              label="Title"
+              name="title"
+              fullWidth
+              variant="outlined"
+              value={formData.title}
+              onChange={handleTextFieldChange}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff', backgroundColor: grey[800] } }}
+              sx={{ mb: 3 }}
+            />
+            <TextField
+              label="Description"
+              name="description"
+              fullWidth
+              variant="outlined"
+              multiline
+              rows={4}
+              value={formData.description}
+              onChange={handleTextFieldChange}
+              InputLabelProps={{ style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff', backgroundColor: grey[800] } }}
+              sx={{ mb: 3 }}
+            />
+            <TextField
+              label="Start Date"
+              type="date"
+              name="startDate"
+              fullWidth
+              variant="outlined"
+              value={formData.startDate}
+              onChange={handleTextFieldChange}
+              InputLabelProps={{ shrink: true, style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff', backgroundColor: grey[800] } }}
+              sx={{ mb: 3 }}
+            />
+            <TextField
+              label="End Date"
+              type="date"
+              name="endDate"
+              fullWidth
+              variant="outlined"
+              value={formData.endDate}
+              onChange={handleTextFieldChange}
+              InputLabelProps={{ shrink: true, style: { color: '#fff' } }}
+              InputProps={{ style: { color: '#fff', backgroundColor: grey[800] } }}
+              sx={{ mb: 3 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={onCancel} sx={{ color: '#fff' }}>Close</Button>
+            <Button onClick={handleSave} sx={{ color: '#fff' }} disabled={isLoading}>
+              {isLoading ? 'Saving...' : 'Save Goal'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+    
+        {/* Error Alert */}
+        <TopMiddleAlert
+          alertText={alertSaveGoalErrorMessage}
+          open={alertSaveGoalErrorOpen}
+          onClose={() => setAlertSaveGoalErrorOpen(false)}
+          severity='error'
         />
-        <TextField
-          label="Description"
-          name="description"
-          fullWidth
-          variant="outlined"
-          multiline
-          rows={4}
-          value={formData.description}
-          onChange={handleTextFieldChange}
-          InputLabelProps={{ style: { color: '#fff' } }}
-          InputProps={{ style: { color: '#fff', backgroundColor: grey[800] } }}
-          sx={{ mb: 3 }}
-        />
-        <TextField
-          label="Start Date"
-          type="date"
-          name="startDate"
-          fullWidth
-          variant="outlined"
-          value={formData.startDate}
-          onChange={handleTextFieldChange}
-          InputLabelProps={{ shrink: true, style: { color: '#fff' } }} // Added shrink here
-          InputProps={{ style: { color: '#fff', backgroundColor: grey[800] } }}
-          sx={{ mb: 3 }}
-        />
-        <TextField
-          label="End Date"
-          type="date"
-          name="endDate"
-          fullWidth
-          variant="outlined"
-          value={formData.endDate}
-          onChange={handleTextFieldChange}
-          InputLabelProps={{ shrink: true, style: { color: '#fff' } }} // Added shrink here
-          InputProps={{ style: { color: '#fff', backgroundColor: grey[800] } }}
-          sx={{ mb: 3 }}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onCancel} sx={{ color: '#fff' }}>Close</Button>
-        <Button onClick={handleSave} sx={{ color: '#fff' }} disabled={isLoading}>
-          {isLoading ? 'Saving...' : 'Save Goal'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </>
+    
   );
 };
 
